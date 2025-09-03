@@ -3,15 +3,15 @@ import { defineMessages } from '@edx/frontend-platform/i18n';
 const messages = defineMessages({
   extendedTitleLabel: {
     id: 'course-authoring.schedule-section.introducing.title.label',
-    defaultMessage: 'Course title',
+    defaultMessage: 'Course requirement',
   },
   extendedTitleHelpText: {
     id: 'course-authoring.schedule-section.introducing.title.help-text',
-    defaultMessage: 'Displayed as title on the course details page. Limit to 50 characters.',
+    defaultMessage: 'Describe requirements for taking this course. Limit to 500 characters.',
   },
   extendedTitleAriaLabel: {
     id: 'course-authoring.schedule-section.introducing.title.aria-label',
-    defaultMessage: 'Show course title',
+    defaultMessage: 'Show course requirement',
   },
   extendedSubtitleLabel: {
     id: 'course-authoring.schedule-section.introducing.subtitle.label',
