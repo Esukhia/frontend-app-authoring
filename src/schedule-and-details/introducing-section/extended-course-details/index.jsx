@@ -7,12 +7,35 @@ import { Form } from '@openedx/paragon';
 import messages from './messages';
 
 const ExtendedCourseDetails = ({
+  title,
   duration,
   description,
   onChange,
 }) => {
   const intl = useIntl();
+  const controlAsFor = (p) => {
+    if (p.as) {
+      return p.as;
+    }
+    if (p.asTextarea) {
+      return TextareaAutosize;
+    }
+    return 'input';
+  };
   const paramsForExtendedFields = [
+    // Note: The 'title' field is repurposed in the UI as 'Course requirement'
+    {
+      value: title,
+      label: intl.formatMessage(messages.extendedTitleLabel),
+      helpText: intl.formatMessage(messages.extendedTitleHelpText),
+      ariaLabel: intl.formatMessage(messages.extendedTitleAriaLabel),
+      controlName: 'title',
+      // Use a native textarea to allow manual resizing
+      as: 'textarea',
+      rows: 3,
+      style: { resize: 'vertical' },
+      maxLength: 500,
+    },
     {
       value: duration,
       label: intl.formatMessage(messages.extendedDurationLabel),
@@ -37,12 +60,14 @@ const ExtendedCourseDetails = ({
         <Form.Group className="form-group-custom" key={param.label}>
           <Form.Label>{param.label}</Form.Label>
           <Form.Control
-            as={param.asTextarea ? TextareaAutosize : 'input'}
+            as={controlAsFor(param)}
             value={param.value}
             name={param.controlName}
             maxLength={param.maxLength}
             onChange={(e) => onChange(e.target.value, param.controlName)}
             aria-label={param.ariaLabel}
+            rows={param.rows}
+            style={param.style}
           />
           <Form.Control.Feedback>{param.helpText}</Form.Control.Feedback>
         </Form.Group>
@@ -52,11 +77,13 @@ const ExtendedCourseDetails = ({
 };
 
 ExtendedCourseDetails.defaultProps = {
+  title: '',
   duration: '',
   description: '',
 };
 
 ExtendedCourseDetails.propTypes = {
+  title: PropTypes.string,
   duration: PropTypes.string,
   description: PropTypes.string,
   onChange: PropTypes.func.isRequired,
