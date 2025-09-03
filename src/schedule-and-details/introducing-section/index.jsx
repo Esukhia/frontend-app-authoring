@@ -99,7 +99,7 @@ const IntroducingSection = ({
             aria-label={intl.formatMessage(
               messages.courseShortDescriptionAriaLabel,
             )}
-            maxLength={150}
+            maxLength={500}
           />
           <Form.Control.Feedback>
             {intl.formatMessage(messages.courseShortDescriptionHelpText)}
