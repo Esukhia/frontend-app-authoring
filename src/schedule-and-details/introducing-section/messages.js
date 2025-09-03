@@ -11,15 +11,15 @@ const messages = defineMessages({
   },
   courseShortDescriptionLabel: {
     id: 'course-authoring.schedule-section.introducing.course-short-description.label',
-    defaultMessage: 'Course short description',
+    defaultMessage: 'Course requirement',
   },
   courseShortDescriptionAriaLabel: {
     id: 'course-authoring.schedule-section.introducing.course-short-description.aria-label',
-    defaultMessage: 'Show course short description',
+    defaultMessage: 'Show course requirement',
   },
   courseShortDescriptionHelpText: {
     id: 'course-authoring.schedule-section.introducing.course-short-description.help-text',
-    defaultMessage: 'Appears on the course catalog page when students roll over the course name. Limit to ~150 characters',
+    defaultMessage: 'Describe requirements for taking this course. Limit to 500 characters.',
   },
   courseOverviewLabel: {
     id: 'course-authoring.schedule-section.introducing.course-overview.label',

@@ -7,30 +7,12 @@ import { Form } from '@openedx/paragon';
 import messages from './messages';
 
 const ExtendedCourseDetails = ({
-  title,
-  subtitle,
   duration,
   description,
   onChange,
 }) => {
   const intl = useIntl();
   const paramsForExtendedFields = [
-    {
-      value: title,
-      label: intl.formatMessage(messages.extendedTitleLabel),
-      helpText: intl.formatMessage(messages.extendedTitleHelpText),
-      ariaLabel: intl.formatMessage(messages.extendedTitleAriaLabel),
-      controlName: 'title',
-      maxLength: 50,
-    },
-    {
-      value: subtitle,
-      label: intl.formatMessage(messages.extendedSubtitleLabel),
-      helpText: intl.formatMessage(messages.extendedSubtitleHelpText),
-      ariaLabel: intl.formatMessage(messages.extendedSubtitleAriaLabel),
-      controlName: 'subtitle',
-      maxLength: 150,
-    },
     {
       value: duration,
       label: intl.formatMessage(messages.extendedDurationLabel),
@@ -70,15 +52,11 @@ const ExtendedCourseDetails = ({
 };
 
 ExtendedCourseDetails.defaultProps = {
-  title: '',
-  subtitle: '',
   duration: '',
   description: '',
 };
 
 ExtendedCourseDetails.propTypes = {
-  title: PropTypes.string,
-  subtitle: PropTypes.string,
   duration: PropTypes.string,
   description: PropTypes.string,
   onChange: PropTypes.func.isRequired,
