@@ -9,7 +9,7 @@ import messages from './messages';
 
 const ExtendedCourseDetails = ({
   title,
-  duration,
+  // duration,
   description,
   durationValue,
   durationUnit,
@@ -39,14 +39,15 @@ const ExtendedCourseDetails = ({
       style: { resize: 'vertical' },
       maxLength: 500,
     },
-    {
-      value: duration,
-      label: intl.formatMessage(messages.extendedDurationLabel),
-      helpText: intl.formatMessage(messages.extendedDurationHelpText),
-      ariaLabel: intl.formatMessage(messages.extendedDurationAriaLabel),
-      controlName: 'duration',
-      maxLength: 50,
-    },
+    // Using new duration fields instead
+    // {
+    //   value: duration,
+    //   label: intl.formatMessage(messages.extendedDurationLabel),
+    //   helpText: intl.formatMessage(messages.extendedDurationHelpText),
+    //   ariaLabel: intl.formatMessage(messages.extendedDurationAriaLabel),
+    //   controlName: 'duration',
+    //   maxLength: 50,
+    // },
     {
       value: description,
       label: intl.formatMessage(messages.extendedDescriptionLabel),
@@ -89,7 +90,7 @@ const ExtendedCourseDetails = ({
 
 ExtendedCourseDetails.defaultProps = {
   title: '',
-  duration: '',
+  // duration: '',
   description: '',
   durationValue: '',
   durationUnit: 'Days',
@@ -97,7 +98,7 @@ ExtendedCourseDetails.defaultProps = {
 
 ExtendedCourseDetails.propTypes = {
   title: PropTypes.string,
-  duration: PropTypes.string,
+  // duration: PropTypes.string,
   description: PropTypes.string,
   durationValue: PropTypes.number,
   durationUnit: PropTypes.string,
