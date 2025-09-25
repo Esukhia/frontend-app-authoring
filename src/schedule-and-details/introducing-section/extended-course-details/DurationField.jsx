@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Form } from '@openedx/paragon';
+import { Form, Dropdown } from '@openedx/paragon';
 
 const DurationField = ({
   label,
@@ -36,6 +36,8 @@ const DurationField = ({
     }
   };
 
+  const durationOptions = ['Days', 'Weeks', 'Months', 'Years'];
+
   return (
     <Form.Group className="form-group-custom duration-field-row">
       <Form.Label>{label}</Form.Label>
@@ -47,19 +49,23 @@ const DurationField = ({
           placeholder={valuePlaceholder}
           onChange={handleValueChange}
           onKeyDown={handleKeyDown}
-          className="duration-value-input"
+          className="duration-value-input me-2"
         />
-        <Form.Control
-          as="select"
-          value={unit}
-          onChange={(e) => onChange(e.target.value, 'durationUnit')}
-          className="duration-unit-select"
-        >
-          <option value="Days">Days</option>
-          <option value="Weeks">Weeks</option>
-          <option value="Months">Months</option>
-          <option value="Years">Years</option>
-        </Form.Control>
+        <Dropdown className="bg-white duration-unit-dropdown">
+          <Dropdown.Toggle variant="outline-primary" id="durationDropdown">
+            {unit}
+          </Dropdown.Toggle>
+          <Dropdown.Menu>
+            {durationOptions.map((option) => (
+              <Dropdown.Item
+                key={option}
+                onClick={() => onChange(option, 'durationUnit')}
+              >
+                {option}
+              </Dropdown.Item>
+            ))}
+          </Dropdown.Menu>
+        </Dropdown>
       </div>
       {helpText && <Form.Control.Feedback>{helpText}</Form.Control.Feedback>}
     </Form.Group>

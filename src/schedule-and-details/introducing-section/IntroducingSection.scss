@@ -7,18 +7,14 @@
 }
 
 .duration-field-row {
-  .duration-value-input, .duration-unit-select {
+  .duration-value-input {
     max-width: 180px;
   }
 
-  .duration-unit-select {
-    margin-left: 8px;
-  }
-
-  .duration-field-icon {
-    margin: 0 8px;
-    font-size: 1.25rem;
-    top: 2px;
-    position: relative;
+  .dropdown-toggle,
+  .dropdown-menu,
+  .dropdown-item {
+    width: 180px;
+    min-width: unset;
   }
 }
