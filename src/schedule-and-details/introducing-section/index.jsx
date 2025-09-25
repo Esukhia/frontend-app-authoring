@@ -22,6 +22,8 @@ const IntroducingSection = ({
   overview,
   introVideo,
   description,
+  durationValue,
+  durationUnit,
   aboutSidebarHtml,
   shortDescription,
   aboutPageEditable,
@@ -84,6 +86,8 @@ const IntroducingSection = ({
           subtitle={subtitle}
           duration={duration}
           description={description}
+          durationValue={durationValue}
+          durationUnit={durationUnit}
           onChange={onChange}
         />
       )}
@@ -172,6 +176,8 @@ IntroducingSection.defaultProps = {
   subtitle: '',
   duration: '',
   description: '',
+  durationValue: '',
+  durationUnit: 'Days',
   introVideo: '',
   shortDescription: '',
   aboutSidebarHtml: '',
@@ -187,6 +193,8 @@ IntroducingSection.propTypes = {
   subtitle: PropTypes.string,
   duration: PropTypes.string,
   description: PropTypes.string,
+  durationValue: PropTypes.number,
+  durationUnit: PropTypes.string,
   overview: PropTypes.string,
   introVideo: PropTypes.string,
   aboutSidebarHtml: PropTypes.string,
