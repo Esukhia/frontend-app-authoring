@@ -4,12 +4,15 @@ import TextareaAutosize from 'react-textarea-autosize';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { Form } from '@openedx/paragon';
 
+import DurationField from './DurationField';
 import messages from './messages';
 
 const ExtendedCourseDetails = ({
   title,
   duration,
   description,
+  durationValue,
+  durationUnit,
   onChange,
 }) => {
   const intl = useIntl();
@@ -56,6 +59,14 @@ const ExtendedCourseDetails = ({
   ];
   return (
     <>
+      <DurationField
+        label={intl.formatMessage(messages.courseDurationLabel)}
+        helpText={intl.formatMessage(messages.courseDurationHelpText)}
+        value={durationValue}
+        unit={durationUnit}
+        valuePlaceholder={intl.formatMessage(messages.courseDurationPlaceholder)}
+        onChange={onChange}
+      />
       {paramsForExtendedFields.map((param) => (
         <Form.Group className="form-group-custom" key={param.label}>
           <Form.Label>{param.label}</Form.Label>
@@ -80,12 +91,16 @@ ExtendedCourseDetails.defaultProps = {
   title: '',
   duration: '',
   description: '',
+  durationValue: '',
+  durationUnit: 'Days',
 };
 
 ExtendedCourseDetails.propTypes = {
   title: PropTypes.string,
   duration: PropTypes.string,
   description: PropTypes.string,
+  durationValue: PropTypes.number,
+  durationUnit: PropTypes.string,
   onChange: PropTypes.func.isRequired,
 };
 

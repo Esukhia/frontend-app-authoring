@@ -118,6 +118,8 @@ const ScheduleAndDetails = ({ intl, courseId }) => {
     subtitle,
     overview,
     duration,
+    durationValue,
+    durationUnit,
     selfPaced,
     startDate,
     introVideo,
@@ -281,6 +283,8 @@ const ScheduleAndDetails = ({ intl, courseId }) => {
                     subtitle={subtitle}
                     introVideo={introVideo}
                     description={description}
+                    durationValue={durationValue}
+                    durationUnit={durationUnit}
                     aboutSidebarHtml={aboutSidebarHtml}
                     shortDescription={shortDescription}
                     aboutPageEditable={aboutPageEditable}
