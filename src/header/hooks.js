@@ -66,6 +66,10 @@ export const useSettingMenuItems = courseId => {
       }] : []
     ),
   ];
+  items.push({
+    href: `${studioBaseUrl}/course_modes/${courseId}`,
+    title: intl.formatMessage(messages['header.links.courseModes']),
+  });
   if (getConfig().ENABLE_CERTIFICATE_PAGE === 'true') {
     items.push({
       href: `${studioBaseUrl}/certificates/${courseId}`,
