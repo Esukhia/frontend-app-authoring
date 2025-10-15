@@ -81,6 +81,11 @@ const messages = defineMessages({
     defaultMessage: 'Certificates',
     description: 'Link to Studio Certificates page',
   },
+  'header.links.courseModes': {
+    id: 'header.links.courseModes',
+    defaultMessage: 'Course Modes',
+    description: 'Link to Studio Course Modes page',
+  },
   'header.links.publisher': {
     id: 'header.links.publisher',
     defaultMessage: 'Publisher',
