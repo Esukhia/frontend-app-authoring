@@ -24,7 +24,7 @@ const FormGroup = (props) => {
       <Form.Control
         data-testid="formControl"
         aria-invalid={props.errorMessage}
-        autoComplete={props.autoComplete ? 'on' : 'off'}
+        autoComplete={props.autoComplete || 'off'}
         onChange={props.handleChange}
         onFocus={handleFocus}
         onClick={handleClick}
@@ -58,7 +58,7 @@ const FormGroup = (props) => {
 FormGroup.defaultProps = {
   as: 'input',
   errorMessage: '',
-  autoComplete: null,
+  autoComplete: 'off',
   readOnly: false,
   handleBlur: null,
   handleChange: () => {},
