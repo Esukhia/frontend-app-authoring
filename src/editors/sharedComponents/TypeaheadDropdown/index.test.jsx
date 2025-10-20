@@ -68,6 +68,20 @@ describe('common/OrganizationDropdown.jsx', () => {
     fireEvent.click(optionsList.at([0]));
     expect(formInput.value).toEqual(newProps.options[0]);
   });
+  it('selects long organization name correctly', () => {
+    const longOrgName = 'PalpungThuptenLungtokKunphenCholing';
+    const newProps = { ...defaultProps, options: ['ShortOrg', longOrgName] };
+    renderComponent(newProps);
+    const formInput = screen.getByTestId('formControl');
+    fireEvent.click(formInput);
+    const optionsList = within(screen.getByTestId('dropdown-container')).getAllByRole('button');
+    // Find the button with the long org name
+    const longOrgButton = optionsList.find(btn => btn.value === longOrgName);
+    expect(longOrgButton).toBeTruthy();
+    expect(longOrgButton.title).toEqual(longOrgName);
+    fireEvent.click(longOrgButton);
+    expect(formInput.value).toEqual(longOrgName);
+  });
   it('toggles options list', async () => {
     const newProps = { ...defaultProps, options: ['opt1', 'opt2'] };
     renderComponent(newProps);
