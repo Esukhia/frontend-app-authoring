@@ -48,24 +48,25 @@ class TypeaheadDropdown extends React.Component {
 
     const sortedOptions = sortBy(options, (option) => option.toLowerCase());
 
-    return sortedOptions.map((opt) => {
-      let value = opt;
-      if (value.length > 30) {
-        value = value.substring(0, 30).concat('...');
-      }
-
-      return (
-        <button
-          type="button"
-          className="dropdown-item data-hj-suppress"
-          value={value}
-          key={value}
-          onClick={(e) => { this.handleItemClick(e); }}
-        >
-          {value}
-        </button>
-      );
-    });
+    return sortedOptions.map((opt) => (
+      <button
+        type="button"
+        className="dropdown-item data-hj-suppress"
+        style={{
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          display: 'block',
+          width: '100%',
+        }}
+        value={opt}
+        key={opt}
+        title={opt}
+        onClick={(e) => { this.handleItemClick(e); }}
+      >
+        {opt}
+      </button>
+    ));
   }
 
   setValue(value) {
