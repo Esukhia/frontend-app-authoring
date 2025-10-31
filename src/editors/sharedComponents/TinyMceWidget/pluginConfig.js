@@ -40,7 +40,7 @@ const pluginConfig = ({ placeholder, editorType, enableImageUpload }) => {
       menubar: false,
       toolbar: toolbar ? mapToolbars([
         [buttons.undo, buttons.redo],
-        [buttons.formatSelect],
+        [buttons.formatSelect, buttons.fontSizeSelect],
         [labelButton],
         [buttons.bold, buttons.italic, buttons.underline, buttons.foreColor, buttons.backColor],
         [
@@ -71,7 +71,7 @@ const pluginConfig = ({ placeholder, editorType, enableImageUpload }) => {
       ]),
       quickbarsSelectionToolbar: toolbar ? false : mapToolbars([
         [buttons.undo, buttons.redo],
-        [buttons.formatSelect],
+        [buttons.formatSelect, buttons.fontSizeSelect],
         [buttons.bold, buttons.italic, buttons.underline, buttons.foreColor],
         [
           buttons.align.justify,
@@ -93,6 +93,7 @@ const pluginConfig = ({ placeholder, editorType, enableImageUpload }) => {
         placeholder,
         statusbar,
         block_formats: 'Header 1=h1;Header 2=h2;Header 3=h3;Header 4=h4;Header 5=h5;Header 6=h6;Div=div;Paragraph=p;Preformatted=pre',
+        fontsize_formats: '8pt 10pt 12pt 14pt 16pt 18pt 24pt 36pt 48pt',
         forced_root_block: defaultFormat,
         powerpaste_allow_local_images: true,
         powerpaste_word_import: 'prompt',
