@@ -7,7 +7,7 @@ import {
   ActionRow,
   Button,
 } from '@openedx/paragon';
-import { StudioFooter } from '@edx/frontend-component-footer';
+import SherabStudioFooter from '../SherabStudioFooter';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import Header from '../header';
@@ -88,7 +88,7 @@ const CourseRerun = () => {
           isQueryPending={savingStatus === RequestStatus.PENDING}
         />
       </div>
-      <StudioFooter />
+      <SherabStudioFooter />
     </>
   );
 };

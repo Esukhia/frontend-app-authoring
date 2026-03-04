@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   useLocation,
 } from 'react-router-dom';
-import { StudioFooter } from '@edx/frontend-component-footer';
+import  SherabStudioFooter  from './SherabStudioFooter';
 import Header from './header';
 import { fetchCourseDetail } from './data/thunks';
 import { useModel } from './generic/model-store';
@@ -65,7 +65,7 @@ const CourseAuthoringPage = ({ courseId, children }) => {
         )
         )}
       {children}
-      {!inProgress && !isEditor && <StudioFooter />}
+      {!inProgress && !isEditor && <SherabStudioFooter />}
     </div>
   );
 };
