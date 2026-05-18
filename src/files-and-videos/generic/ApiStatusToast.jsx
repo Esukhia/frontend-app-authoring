@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useIntl } from '@edx/frontend-platform/i18n';
-import { Toast } from '@openedx/paragon';
+import { Icon, Toast } from '@openedx/paragon';
 import messages from './messages';
 
 const ApiStatusToast = ({
@@ -11,6 +11,7 @@ const ApiStatusToast = ({
   setClose,
   setSelectedRows,
   fileType,
+  icon,
 }) => {
   const intl = useIntl();
   const handleClose = () => {
@@ -23,7 +24,12 @@ const ApiStatusToast = ({
       show={isOpen}
       onClose={handleClose}
     >
-      {intl.formatMessage(messages.apiStatusToastMessage, { actionType, selectedRowCount, fileType })}
+      <div className="d-flex align-items-center">
+        {icon && <Icon src={icon} className="mr-2" style={{ fontSize: '1.25rem' }} />}
+        <span>
+          {intl.formatMessage(messages.apiStatusToastMessage, { actionType, selectedRowCount, fileType })}
+        </span>
+      </div>
     </Toast>
   );
 };
@@ -35,6 +41,11 @@ ApiStatusToast.propTypes = {
   setClose: PropTypes.func.isRequired,
   setSelectedRows: PropTypes.func.isRequired,
   fileType: PropTypes.string.isRequired,
+  icon: PropTypes.elementType,
+};
+
+ApiStatusToast.defaultProps = {
+  icon: null,
 };
 
 export default ApiStatusToast;

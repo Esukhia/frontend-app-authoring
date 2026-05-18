@@ -21,6 +21,11 @@ const messages = defineMessages({
     defaultMessage: 'Deleting',
     description: 'This message is used in the toast when files are deleted',
   },
+  apiStatusDeletedAction: {
+    id: 'course-authoring.files-and-upload.apiStatus.deletedAction.message',
+    defaultMessage: 'Deleted',
+    description: 'This message is used in the toast after files are deleted',
+  },
   apiStatusDownloadingAction: {
     id: 'course-authoring.files-and-upload.apiStatus.downloadingAction.message',
     defaultMessage: 'Downloading',
@@ -213,6 +218,11 @@ const messages = defineMessages({
     id: 'course-authoring.files-and-uploads.fileInput.ariaLabel',
     defaultMessage: 'Upload a file',
     description: 'Accessible (screen reader) label for file input',
+  },
+  uploadSuccessToastMessage: {
+    id: 'course-authoring.files-and-uploads.upload.success.toast',
+    defaultMessage: 'File uploaded successfully',
+    description: 'Toast message shown when a file upload completes successfully',
   },
 });
 

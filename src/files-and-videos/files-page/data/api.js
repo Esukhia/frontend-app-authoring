@@ -114,11 +114,11 @@ export async function deleteAsset(courseId, assetId) {
  * @param {blockId} courseId Course ID for the course to operate on
 
  */
-export async function addAsset(courseId, file) {
+export async function addAsset(courseId, file, onUploadProgress) {
   const formData = new FormData();
   formData.append('file', file);
   const { data } = await getAuthenticatedHttpClient()
-    .post(getAssetsUrl(courseId), formData);
+    .post(getAssetsUrl(courseId), formData, { onUploadProgress });
   return camelCaseObject(data);
 }
 
