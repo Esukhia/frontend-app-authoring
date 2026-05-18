@@ -44,6 +44,7 @@ const FileTable = ({
   handleUsagePaths,
   handleErrorReset,
   handleFileOrder,
+  handleFileSizeError,
   tableColumns,
   maxFileSize,
   thumbnailPreview,
@@ -133,6 +134,8 @@ const FileTable = ({
     onAddFile: (uploads) => handleAddFile(uploads),
     setSelectedRows,
     setAddOpen,
+    maxFileSize,
+    onFileSizeError: handleFileSizeError,
   });
   const handleDropzoneAsset = ({ fileData, handleError }) => {
     try {
@@ -384,6 +387,7 @@ FileTable.propTypes = {
   handleLockFile: PropTypes.func,
   handleErrorReset: PropTypes.func.isRequired,
   handleFileOrder: PropTypes.func.isRequired,
+  handleFileSizeError: PropTypes.func,
   tableColumns: PropTypes.arrayOf(PropTypes.shape({
     Header: PropTypes.string,
     accessor: PropTypes.string,
@@ -396,6 +400,7 @@ FileTable.propTypes = {
 FileTable.defaultProps = {
   files: null,
   handleLockFile: () => {},
+  handleFileSizeError: () => {},
 };
 
 export default FileTable;

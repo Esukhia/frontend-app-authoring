@@ -8,14 +8,33 @@ export const useFileInput = ({
   onAddFile,
   setSelectedRows,
   setAddOpen,
+  maxFileSize,
+  onFileSizeError,
 }) => {
   const ref = React.useRef();
   const click = () => ref.current.click();
   const addFile = (e) => {
     const { files } = e.target;
-    setSelectedRows([...files]);
-    onAddFile(Object.values(files));
-    setAddOpen();
+    const fileArray = Object.values(files);
+
+    if (maxFileSize) {
+      const validFiles = fileArray.filter(file => file.size <= maxFileSize);
+      const invalidFiles = fileArray.filter(file => file.size > maxFileSize);
+
+      if (invalidFiles.length > 0 && onFileSizeError) {
+        onFileSizeError(invalidFiles);
+      }
+
+      if (validFiles.length > 0) {
+        setSelectedRows(validFiles);
+        onAddFile(validFiles);
+        setAddOpen();
+      }
+    } else {
+      setSelectedRows(fileArray);
+      onAddFile(fileArray);
+      setAddOpen();
+    }
     e.target.value = '';
   };
   return {
