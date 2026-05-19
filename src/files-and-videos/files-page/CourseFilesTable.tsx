@@ -10,6 +10,7 @@ import {
   updateAssetOrder,
   validateAssetFiles,
 } from '@src/files-and-videos/files-page/data/thunks';
+import { updateEditStatus, updateErrors } from '@src/files-and-videos/files-page/data/slice';
 import FileInfoModalSidebar from '@src/files-and-videos/files-page/FileInfoModalSidebar';
 import FileThumbnail from '@src/files-and-videos/files-page/FileThumbnail';
 import FileValidationModal from '@src/files-and-videos/files-page/FileValidationModal';
@@ -22,6 +23,8 @@ import {
 } from '@src/files-and-videos/generic';
 import { useModels } from '@src/generic/model-store';
 import { DeprecatedReduxState } from '@src/store';
+import { RequestStatus } from '@src/data/constants';
+import { UPLOAD_FILE_MAX_SIZE } from '@src/constants';
 import { getFileSizeToClosestByte } from '@src/utils';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -63,6 +66,18 @@ export const CourseFilesTable = () => {
   const handleFileOrder = ({ newFileIdOrder }) => {
     dispatch(updateAssetOrder(courseId, newFileIdOrder));
   };
+  const maxFileSize = UPLOAD_FILE_MAX_SIZE;
+  const maxFileSizeInMB = Math.round(maxFileSize / (1024 * 1024));
+  const handleFileSizeError = (invalidFiles) => {
+    handleErrorReset({ errorType: 'add' });
+    dispatch(updateEditStatus({ editType: 'add', status: RequestStatus.FAILED }));
+    invalidFiles.forEach((file) => {
+      dispatch(updateErrors({
+        error: 'add',
+        message: `File ${file.name} exceeds maximum size of ${maxFileSizeInMB} MB.`,
+      }));
+    });
+  };
 
   const thumbnailPreview = (props) => FileThumbnail(props);
   const infoModalSidebar = (asset) => FileInfoModalSidebar({
@@ -81,7 +96,6 @@ export const CourseFilesTable = () => {
     usageErrorMessages: errorMessages.usageMetrics,
     fileType: 'file',
   };
-  const maxFileSize = 1 * 1024 * 1024 * 1024;
 
   const activeColumn = {
     id: 'activeStatus',
@@ -176,6 +190,7 @@ export const CourseFilesTable = () => {
           handleUsagePaths,
           handleErrorReset,
           handleFileOrder,
+          handleFileSizeError,
           tableColumns,
           maxFileSize,
           thumbnailPreview,
