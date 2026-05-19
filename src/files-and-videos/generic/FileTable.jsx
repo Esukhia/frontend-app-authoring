@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import {
+  useCallback, useEffect, useRef, useState,
+} from 'react';
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
@@ -7,9 +9,13 @@ import {
   CardView,
   DataTable,
   Dropzone,
+  Icon,
+  ProgressBar,
   TextFilter,
+  Toast,
   useToggle,
 } from '@openedx/paragon';
+import { Check, DeleteOutline, FileUpload } from '@openedx/paragon/icons';
 
 import { RequestStatus } from '../../data/constants';
 import { sortFiles } from './utils';
@@ -59,6 +65,8 @@ const FileTable = ({
   const [isAddOpen, setAddOpen, setAddClose] = useToggle(false);
   const [selectedRows, setSelectedRows] = useState([]);
   const [isDeleteConfirmationOpen, openDeleteConfirmation, closeDeleteConfirmation] = useToggle(false);
+  const [isUploadSuccessOpen, setUploadSuccessOpen, setUploadSuccessClose] = useToggle(false);
+  const prevAddingStatusRef = useRef(null);
   const [initialState, setInitialState] = useState({
     filters: [],
     hiddenColumns: [],
@@ -70,12 +78,40 @@ const FileTable = ({
 
   const {
     loadingStatus,
+    addingStatus,
+    deletingStatus,
+    uploadProgress,
     usagePathStatus,
     usageErrorMessages,
     encodingsDownloadUrl,
     supportedFileFormats,
     fileType,
   } = data;
+
+  useEffect(() => {
+    if (prevAddingStatusRef.current === RequestStatus.IN_PROGRESS
+      && addingStatus === RequestStatus.SUCCESSFUL) {
+      setUploadSuccessOpen();
+    }
+    prevAddingStatusRef.current = addingStatus;
+  }, [addingStatus]);
+
+  useEffect(() => {
+    if (isUploadSuccessOpen) {
+      const timer = setTimeout(() => setUploadSuccessClose(), 3000);
+      return () => clearTimeout(timer);
+    }
+    return undefined;
+  }, [isUploadSuccessOpen]);
+
+  useEffect(() => {
+    if (deletingStatus === RequestStatus.SUCCESSFUL && isDeleteOpen) {
+      const timer = setTimeout(() => setDeleteClose(), 3000);
+      return () => clearTimeout(timer);
+    }
+    return undefined;
+  }, [deletingStatus, isDeleteOpen]);
+
   const defaultCurrentView = (fileType === 'video' && localStorage.getItem('videosCurrentView')) || (fileType === 'file' && localStorage.getItem('filesCurrentView')) || defaultView;
   const [currentView, setCurrentView] = useState(defaultCurrentView);
 
@@ -190,6 +226,18 @@ const FileTable = ({
 
   return (
     <div className="files-table">
+      {addingStatus === RequestStatus.IN_PROGRESS && uploadProgress > 0 && (
+        <div className="d-flex align-items-center bg-white border rounded p-3 mb-3 shadow-sm">
+          <Icon src={FileUpload} className="text-info mr-3" style={{ fontSize: '1.75rem' }} />
+          <div className="flex-grow-1">
+            <div className="d-flex justify-content-between align-items-center mb-1">
+              <span className="small font-weight-bold">Uploading...</span>
+              <span className="small text-muted">{uploadProgress}%</span>
+            </div>
+            <ProgressBar now={uploadProgress} variant="info" />
+          </div>
+        </div>
+      )}
       <DataTable
         isFilterable
         isLoading={loadingStatus === RequestStatus.IN_PROGRESS}
@@ -245,12 +293,15 @@ const FileTable = ({
         )}
 
         <ApiStatusToast
-          actionType={intl.formatMessage(messages.apiStatusDeletingAction)}
+          actionType={deletingStatus === RequestStatus.SUCCESSFUL
+            ? intl.formatMessage(messages.apiStatusDeletedAction)
+            : intl.formatMessage(messages.apiStatusDeletingAction)}
           selectedRowCount={selectedRows.length}
           isOpen={isDeleteOpen}
           setClose={setDeleteClose}
           setSelectedRows={setSelectedRows}
           fileType={fileType}
+          icon={DeleteOutline}
         />
 
         {fileType === 'file' && (
@@ -261,8 +312,19 @@ const FileTable = ({
             setClose={setAddClose}
             setSelectedRows={setSelectedRows}
             fileType={fileType}
+            icon={FileUpload}
           />
         )}
+
+        <Toast
+          show={isUploadSuccessOpen}
+          onClose={setUploadSuccessClose}
+        >
+          <div className="d-flex align-items-center">
+            <Icon src={Check} className="mr-2 text-success" style={{ fontSize: '1.25rem' }} />
+            <span>{intl.formatMessage(messages.uploadSuccessToastMessage)}</span>
+          </div>
+        </Toast>
 
         <ApiStatusToast
           actionType={intl.formatMessage(messages.apiStatusDownloadingAction)}
@@ -306,6 +368,9 @@ FileTable.propTypes = {
   data: PropTypes.shape({
     fileIds: PropTypes.arrayOf(PropTypes.string).isRequired,
     loadingStatus: PropTypes.string.isRequired,
+    addingStatus: PropTypes.string,
+    deletingStatus: PropTypes.string,
+    uploadProgress: PropTypes.number,
     usagePathStatus: PropTypes.string.isRequired,
     usageErrorMessages: PropTypes.arrayOf(PropTypes.string).isRequired,
     encodingsDownloadUrl: PropTypes.string,

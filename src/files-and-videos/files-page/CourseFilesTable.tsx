@@ -34,6 +34,9 @@ export const CourseFilesTable = () => {
   const {
     assetIds,
     loadingStatus,
+    addingStatus,
+    deletingStatus,
+    uploadProgress,
     usageStatus: usagePathStatus,
     errors: errorMessages,
   } = useSelector((state: DeprecatedReduxState) => state.assets);
@@ -71,6 +74,9 @@ export const CourseFilesTable = () => {
   const data = {
     fileIds: assetIds,
     loadingStatus,
+    addingStatus,
+    deletingStatus,
+    uploadProgress,
     usagePathStatus,
     usageErrorMessages: errorMessages.usageMetrics,
     fileType: 'file',

@@ -28,6 +28,7 @@ import {
   updateEditStatus,
   updateDuplicateFiles,
   clearAssetIds,
+  updateUploadProgress,
 } from './slice';
 
 import { getUploadConflicts, updateFileValues } from './utils';
@@ -111,9 +112,15 @@ export function deleteAssetFile(courseId, id) {
 export function addAssetFile(courseId, file, isOverwrite) {
   return async (dispatch) => {
     dispatch(updateEditStatus({ editType: 'add', status: RequestStatus.IN_PROGRESS }));
+    dispatch(updateUploadProgress({ progress: 0 }));
+
+    const onUploadProgress = ({ loaded, total }) => {
+      const percent = Math.round((loaded / total) * 100);
+      dispatch(updateUploadProgress({ progress: percent }));
+    };
 
     try {
-      const { asset } = await addAsset(courseId, file);
+      const { asset } = await addAsset(courseId, file, onUploadProgress);
       const [parsedAssets] = updateFileValues([asset]);
       dispatch(addModel({
         modelType: 'assets',
@@ -125,6 +132,7 @@ export function addAssetFile(courseId, file, isOverwrite) {
         }));
       }
       dispatch(updateEditStatus({ editType: 'add', status: RequestStatus.SUCCESSFUL }));
+      dispatch(updateUploadProgress({ progress: 0 }));
     } catch (error) {
       if (error.response && error.response.status === 413) {
         const message = error.response.data.error;
@@ -133,6 +141,7 @@ export function addAssetFile(courseId, file, isOverwrite) {
         dispatch(updateErrors({ error: 'add', message: `Failed to add ${file.name}.` }));
       }
       dispatch(updateEditStatus({ editType: 'add', status: RequestStatus.FAILED }));
+      dispatch(updateUploadProgress({ progress: 0 }));
     }
   };
 }

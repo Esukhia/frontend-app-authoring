@@ -12,6 +12,7 @@ const slice = createSlice({
     duplicateFiles: [],
     updatingStatus: '',
     addingStatus: '',
+    uploadProgress: 0,
     deletingStatus: '',
     usageStatus: '',
     errors: {
@@ -84,6 +85,9 @@ const slice = createSlice({
       const { error } = payload;
       state.errors[error] = [];
     },
+    updateUploadProgress: (state, { payload }) => {
+      state.uploadProgress = payload.progress;
+    },
   },
 });
 
@@ -98,6 +102,7 @@ export const {
   updateEditStatus,
   updateDuplicateFiles,
   clearAssetIds,
+  updateUploadProgress,
 } = slice.actions;
 
 export const {
