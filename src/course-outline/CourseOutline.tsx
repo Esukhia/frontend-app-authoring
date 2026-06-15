@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import {
+  Button,
   Container,
   Layout,
   Row,
@@ -9,8 +10,8 @@ import {
   StandardModal,
 } from '@openedx/paragon';
 import { Helmet } from 'react-helmet';
-import { CheckCircle as CheckCircleIcon } from '@openedx/paragon/icons';
-import { useSelector } from 'react-redux';
+import { CheckCircle as CheckCircleIcon, AutoAwesome as SparkleIcon } from '@openedx/paragon/icons';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   arrayMove,
   SortableContext,
@@ -37,6 +38,8 @@ import { ContentType } from '@src/library-authoring/routes';
 import { NOTIFICATION_MESSAGES } from '@src/constants';
 import { COMPONENT_TYPES } from '@src/generic/block-type-utils/constants';
 import { XBlock } from '@src/data/types';
+import { AiCourseCreatorModal } from '@src/ai-course-creator';
+import aiMessages from '@src/ai-course-creator/messages';
 import {
   getCurrentItem,
   getProctoredExamsFlag,
@@ -59,6 +62,7 @@ import {
   possibleSubsectionMoves,
 } from './drag-helper/utils';
 import { useCourseOutline } from './hooks';
+import { fetchCourseOutlineIndexQuery } from './data/thunk';
 import messages from './messages';
 import { getTagsExportFile } from './data/api';
 import OutlineAddChildButtons from './OutlineAddChildButtons';
@@ -143,8 +147,26 @@ const CourseOutline = ({ courseId }: CourseOutlineProps) => {
     resetScrollState,
   } = useCourseOutline({ courseId });
 
+  const dispatch = useDispatch();
+
   // Use `setToastMessage` to show the toast.
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // AI course-creator chatbot modal (shown from the empty outline).
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const handleAiApplied = useCallback((summary: {
+    counts: { sections: number; subsections: number; units: number; components: number };
+  }) => {
+    setIsAiModalOpen(false);
+    setToastMessage(intl.formatMessage(aiMessages.generateSuccess, {
+      sections: summary.counts.sections,
+      subsections: summary.counts.subsections,
+      units: summary.counts.units,
+      components: summary.counts.components,
+    }));
+    // Reload the outline so the freshly created structure appears.
+    dispatch(fetchCourseOutlineIndexQuery(courseId));
+  }, [dispatch, courseId, intl]);
 
   useEffect(() => {
     // Wait for the course data to load before exporting tags.
@@ -473,15 +495,31 @@ const CourseOutline = ({ courseId }: CourseOutlineProps) => {
                           </>
                         ) : (
                           <EmptyPlaceholder>
-                            {courseActions.childAddable && (
-                              <OutlineAddChildButtons
-                                handleNewButtonClick={handleNewSectionSubmit}
-                                handleUseFromLibraryClick={openAddLibrarySectionModal}
-                                childType={ContainerType.Section}
-                                btnVariant="primary"
-                                btnClasses="mt-1"
-                              />
-                            )}
+                            <>
+                              {courseActions.childAddable && (
+                                <div className="d-flex flex-column align-items-center mb-3">
+                                  <Button
+                                    variant="primary"
+                                    iconBefore={SparkleIcon}
+                                    onClick={() => setIsAiModalOpen(true)}
+                                  >
+                                    {intl.formatMessage(aiMessages.launchButton)}
+                                  </Button>
+                                  <p className="small text-gray-500 mt-2 mb-0">
+                                    {intl.formatMessage(aiMessages.launchButtonDescription)}
+                                  </p>
+                                </div>
+                              )}
+                              {courseActions.childAddable && (
+                                <OutlineAddChildButtons
+                                  handleNewButtonClick={handleNewSectionSubmit}
+                                  handleUseFromLibraryClick={openAddLibrarySectionModal}
+                                  childType={ContainerType.Section}
+                                  btnVariant="outline-primary"
+                                  btnClasses="mt-1"
+                                />
+                              )}
+                            </>
                           </EmptyPlaceholder>
                         )}
                       </div>
@@ -551,6 +589,14 @@ const CourseOutline = ({ courseId }: CourseOutlineProps) => {
             visibleTabs={[ContentType.sections]}
           />
         </StandardModal>
+        {isAiModalOpen && (
+          <AiCourseCreatorModal
+            courseId={courseId}
+            isOpen={isAiModalOpen}
+            onClose={() => setIsAiModalOpen(false)}
+            onApplied={handleAiApplied}
+          />
+        )}
       </Container>
       <div className="alert-toast">
         <ProcessingNotification
