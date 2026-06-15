@@ -231,57 +231,82 @@ const AiCourseCreatorModal = ({
             <div className="flex-grow-1 d-flex flex-column" style={{ minWidth: 0 }}>
               <PhaseIndicator currentPhase={currentPhase} />
               <div
-                className="border rounded p-3 mb-3 flex-grow-1"
-                style={{ overflowY: 'auto', height: '55vh' }}
+                className="border rounded d-flex flex-column mb-3 flex-grow-1"
+                style={{ height: '55vh', overflow: 'hidden' }}
               >
-                {chatMessages.map((message, idx) => (
-                  // eslint-disable-next-line react/no-array-index-key
-                  <ChatMessageBubble key={idx} author={message.role} content={message.content} />
-                ))}
-                {isStreaming && (
-                  streamingText
-                    ? <ChatMessageBubble author="assistant" content={stripPhaseMarker(stripCourseJson(streamingText))} />
-                    : (
-                      <div className="d-flex align-items-center text-muted">
-                        <Spinner animation="border" size="sm" className="mr-2" screenReaderText="loading" />
-                        {intl.formatMessage(messages.thinking)}
-                      </div>
-                    )
-                )}
-                <div ref={threadEndRef} />
-              </div>
-              <div className="d-flex align-items-end" style={{ gap: '0.5rem' }}>
-                <Form.Control
-                  ref={textareaRef}
-                  as="textarea"
-                  rows={1}
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onInput={(e) => {
-                    const el = e.currentTarget as HTMLTextAreaElement;
-                    el.style.height = 'auto';
-                    const maxH = 120;
-                    el.style.height = `${Math.min(el.scrollHeight, maxH)}px`;
-                    el.style.overflowY = el.scrollHeight > maxH ? 'auto' : 'hidden';
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSend();
-                    }
-                  }}
-                  placeholder={intl.formatMessage(messages.inputPlaceholder)}
-                  disabled={isStreaming}
-                  style={{ resize: 'none', overflowY: 'hidden', minHeight: '2.5rem' }}
-                />
-                <Button iconBefore={SendIcon} onClick={handleSend} disabled={isStreaming || !inputValue.trim()}>
-                  {intl.formatMessage(messages.sendButton)}
-                </Button>
+                <div className="p-3 flex-grow-1" style={{ overflowY: 'auto' }}>
+                  {chatMessages.map((message, idx) => (
+                    // eslint-disable-next-line react/no-array-index-key
+                    <ChatMessageBubble key={idx} author={message.role} content={message.content} />
+                  ))}
+                  {isStreaming && (
+                    streamingText
+                      ? <ChatMessageBubble author="assistant" content={stripPhaseMarker(stripCourseJson(streamingText))} />
+                      : (
+                        <div className="d-flex align-items-center text-muted">
+                          <Spinner animation="border" size="sm" className="mr-2" screenReaderText="loading" />
+                          {intl.formatMessage(messages.thinking)}
+                        </div>
+                      )
+                  )}
+                  <div ref={threadEndRef} />
+                </div>
+                <div className="border-top d-flex align-items-center px-3 py-2" style={{ gap: '0.5rem' }}>
+                  <Form.Control
+                    ref={textareaRef}
+                    as="textarea"
+                    rows={1}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onInput={(e) => {
+                      const el = e.currentTarget as HTMLTextAreaElement;
+                      el.style.height = 'auto';
+                      const maxH = 120;
+                      el.style.height = `${Math.min(el.scrollHeight, maxH)}px`;
+                      el.style.overflowY = el.scrollHeight > maxH ? 'auto' : 'hidden';
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSend();
+                      }
+                    }}
+                    placeholder={intl.formatMessage(messages.inputPlaceholder)}
+                    disabled={isStreaming}
+                    style={{
+                      resize: 'none',
+                      overflowY: 'hidden',
+                      minHeight: '2.5rem',
+                      border: 'none',
+                      boxShadow: 'none',
+                      padding: '0.375rem 0',
+                      flex: 1,
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSend}
+                    disabled={isStreaming || !inputValue.trim()}
+                    aria-label={intl.formatMessage(messages.sendButton)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: inputValue.trim() && !isStreaming ? 'pointer' : 'default',
+                      color: inputValue.trim() && !isStreaming ? '#454545' : '#c0c0c0',
+                      padding: '0.25rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <SendIcon style={{ width: '1.25rem', height: '1.25rem' }} />
+                  </button>
+                </div>
               </div>
             </div>
 
             {/* Side column: materials */}
-            <div style={{ width: 300, flexShrink: 0 }}>
+            <div style={{ width: 300, flexShrink: 0, marginTop: '3.625rem' }}>
               <Stack gap={3}>
                 <MaterialDropzone
                   materials={materials}
