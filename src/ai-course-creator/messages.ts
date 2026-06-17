@@ -58,13 +58,33 @@ const messages = defineMessages({
   },
   generateButton: {
     id: 'course-authoring.ai-course-creator.generate.button',
-    defaultMessage: 'Generate this course',
-    description: 'Button that builds the real course structure from the outline',
+    defaultMessage: 'Generate course',
+    description: 'Button that generates the full course content and writes it to the outline',
+  },
+  retryGenerateButton: {
+    id: 'course-authoring.ai-course-creator.generate.retry',
+    defaultMessage: 'Retry generation',
+    description: 'Button to retry course generation after a failure',
   },
   generating: {
     id: 'course-authoring.ai-course-creator.generating',
-    defaultMessage: 'Building your course…',
-    description: 'Shown while the course structure is being created',
+    defaultMessage: 'Generating…',
+    description: 'Shown on the button while the course is being generated',
+  },
+  generateStarting: {
+    id: 'course-authoring.ai-course-creator.generate.starting',
+    defaultMessage: 'Starting generation…',
+    description: 'Initial progress message when generation begins',
+  },
+  generateDoneTitle: {
+    id: 'course-authoring.ai-course-creator.generate.done.title',
+    defaultMessage: 'Course created 🎉',
+    description: 'Heading of the success panel after generation completes',
+  },
+  goToOutlineButton: {
+    id: 'course-authoring.ai-course-creator.generate.go-to-outline',
+    defaultMessage: 'Go to outline',
+    description: 'Button that closes the modal and shows the freshly built outline',
   },
   generateSuccess: {
     id: 'course-authoring.ai-course-creator.generate.success',

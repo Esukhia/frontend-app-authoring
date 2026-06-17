@@ -5,7 +5,8 @@ const getApiBaseUrl = () => getConfig().STUDIO_BASE_URL;
 
 export const getChatUrl = () => `${getApiBaseUrl()}/api/ai-course-creator/chat/`;
 export const getUploadUrl = () => `${getApiBaseUrl()}/api/ai-course-creator/upload/`;
-export const getApplyUrl = () => `${getApiBaseUrl()}/api/ai-course-creator/apply/`;
+export const getGenerateUrl = () => `${getApiBaseUrl()}/api/ai-course-creator/generate/`;
+export const getConfigUrl = () => `${getApiBaseUrl()}/api/ai-course-creator/config/`;
 export const getSessionUrl = (courseId: string) => `${getApiBaseUrl()}/api/ai-course-creator/session/?course_id=${encodeURIComponent(courseId)}`;
 export const getMaterialUrl = (id: number) => `${getApiBaseUrl()}/api/ai-course-creator/material/${id}/`;
 
@@ -30,6 +31,15 @@ export interface SessionData {
   materials: MaterialData[];
   hasCourseJson: boolean;
   currentPhase: number;
+  generationStatus: string;
+  generationError: string;
+}
+
+export interface GenerateCounts {
+  sections: number;
+  subsections: number;
+  units: number;
+  components: number;
 }
 
 /** Read the Django CSRF token from cookies (only works same-domain). */
@@ -146,12 +156,81 @@ export async function uploadMaterialLink(courseId: string, url: string): Promise
   return camelCaseObject(data);
 }
 
-/** Build the real course structure from the generated outline. */
-export async function applyOutline(courseId: string): Promise<{
-  counts: { sections: number; subsections: number; units: number; components: number };
-  sectionLocators: string[];
-}> {
-  const { data } = await getAuthenticatedHttpClient().post(getApplyUrl(), { course_id: courseId });
+/**
+ * Generate the full course (structure + content) and write it into the outline
+ * as draft, streaming progress over SSE.
+ *
+ * @returns the created-block counts once the build finishes.
+ */
+export async function streamGenerate(
+  courseId: string,
+  { onProgress, signal }: { onProgress: (message: string) => void; signal?: AbortSignal },
+): Promise<{ counts: GenerateCounts }> {
+  const csrfToken = await resolveCsrfToken();
+  const response = await fetch(getGenerateUrl(), {
+    method: 'POST',
+    credentials: 'include',
+    signal,
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken,
+    },
+    body: JSON.stringify({ course_id: courseId }),
+  });
+
+  if (!response.ok || !response.body) {
+    throw new Error(`Generate request failed (${response.status})`);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let counts: GenerateCounts = {
+    sections: 0, subsections: 0, units: 0, components: 0,
+  };
+  let done = false;
+
+  const handleFrame = (frame: string) => {
+    const line = frame.split('\n').find((l) => l.startsWith('data:'));
+    if (!line) { return; }
+    try {
+      const payload = JSON.parse(line.slice(5).trim());
+      if (payload.type === 'progress') {
+        onProgress(payload.message);
+      } else if (payload.type === 'done') {
+        counts = { ...counts, ...(payload.counts || {}) };
+        done = true;
+      } else if (payload.type === 'error') {
+        throw new Error(payload.error);
+      }
+    } catch (e) {
+      if (e instanceof Error && e.message && !e.message.includes('JSON')) {
+        throw e;
+      }
+    }
+  };
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    // eslint-disable-next-line no-await-in-loop
+    const { value, done: streamDone } = await reader.read();
+    if (streamDone) { break; }
+    buffer += decoder.decode(value, { stream: true });
+    const frames = buffer.split('\n\n');
+    buffer = frames.pop() || '';
+    frames.forEach(handleFrame);
+  }
+  if (buffer.trim()) { handleFrame(buffer); }
+
+  if (!done) {
+    throw new Error('Generation did not finish. Please try again.');
+  }
+  return { counts };
+}
+
+/** Whether the AI course creator is enabled on this Studio instance. */
+export async function getAiConfig(): Promise<{ enabled: boolean }> {
+  const { data } = await getAuthenticatedHttpClient().get(getConfigUrl());
   return camelCaseObject(data);
 }
 

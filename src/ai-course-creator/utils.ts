@@ -3,7 +3,16 @@ export const COURSE_JSON_END = '===COURSE_JSON_END===';
 
 export const PHASE_MARKER_RE = /===SHERAB_PHASE:\d+===/g;
 
-export const stripPhaseMarker = (text: string): string => text.replace(PHASE_MARKER_RE, '').trim();
+// Matches a complete OR partially-streamed marker at the very start of a message,
+// e.g. "===", "===SHERAB_PHASE", "===SHERAB_PHASE:2", "===SHERAB_PHASE:2===".
+// Since every message now begins with a marker, this prevents it from briefly
+// flashing on screen while the first tokens stream in.
+const LEADING_PARTIAL_MARKER_RE = /^={2,3}[A-Z_]*:?\d*={0,3}/;
+
+export const stripPhaseMarker = (text: string): string => text
+  .replace(PHASE_MARKER_RE, '')
+  .replace(LEADING_PARTIAL_MARKER_RE, '')
+  .trim();
 
 /**
  * Remove the machine-readable COURSE_JSON block (and anything after an opening

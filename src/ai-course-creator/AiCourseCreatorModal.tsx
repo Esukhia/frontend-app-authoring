@@ -3,7 +3,7 @@ import {
 } from 'react';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import {
-  ActionRow, Alert, AlertModal, Button, Form, ModalDialog, Spinner, Stack,
+  ActionRow, Alert, AlertModal, Button, Form, ModalDialog, Stack,
 } from '@openedx/paragon';
 import {
   AutoAwesome as SparkleIcon,
@@ -15,14 +15,15 @@ import ChatMessageBubble from './ChatMessageBubble';
 import MaterialDropzone from './MaterialDropzone';
 import PhaseIndicator from './PhaseIndicator';
 import {
-  applyOutline,
   deleteMaterial,
   getSession,
   resetSession,
   streamChat,
+  streamGenerate,
   uploadMaterialFile,
   uploadMaterialLink,
   type ChatMessageData,
+  type GenerateCounts,
   type MaterialData,
 } from './data/api';
 import { stripCourseJson, stripPhaseMarker } from './utils';
@@ -37,6 +38,11 @@ interface Props {
   }) => void;
 }
 
+// Module-level guard: prevents concurrent greeting calls when the modal
+// remounts (e.g. close/reopen) before the first getSession call completes.
+// JS is single-threaded so the has/add check before the first await is atomic.
+const _greetingInFlight = new Set<string>();
+
 const AiCourseCreatorModal = ({
   courseId, isOpen, onClose, onApplied,
 }: Props) => {
@@ -47,8 +53,9 @@ const AiCourseCreatorModal = ({
   const [streamingText, setStreamingText] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [isApplying, setIsApplying] = useState(false);
-  const [hasCourseJson, setHasCourseJson] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [genProgress, setGenProgress] = useState('');
+  const [genResult, setGenResult] = useState<GenerateCounts | null>(null);
   const [error, setError] = useState('');
   const [hasInitialised, setHasInitialised] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
@@ -66,11 +73,10 @@ const AiCourseCreatorModal = ({
     setIsStreaming(true);
     setStreamingText('');
     try {
-      const { fullText, hasCourseJson: produced, currentPhase: newPhase } = await streamChat(courseId, message, {
+      const { fullText, currentPhase: newPhase } = await streamChat(courseId, message, {
         onToken: (text) => setStreamingText((prev) => prev + text),
       });
       setChatMessages((prev) => [...prev, { role: 'assistant', content: stripPhaseMarker(stripCourseJson(fullText)) }]);
-      setHasCourseJson((prev) => prev || produced);
       setCurrentPhase(newPhase);
     } catch (e) {
       const detail = e instanceof Error && e.message ? e.message : '';
@@ -82,13 +88,13 @@ const AiCourseCreatorModal = ({
   }, [courseId, intl]);
 
   useEffect(() => {
-    if (!isOpen || hasInitialised) { return; }
+    if (!isOpen || hasInitialised || _greetingInFlight.has(courseId)) { return; }
+    _greetingInFlight.add(courseId);
     setHasInitialised(true);
     (async () => {
       try {
         const session = await getSession(courseId);
         setMaterials(session.materials || []);
-        setHasCourseJson(Boolean(session.hasCourseJson));
         setCurrentPhase(session.currentPhase || 1);
         if (session.messages && session.messages.length) {
           setChatMessages(session.messages.map((m) => ({ role: m.role, content: m.content })));
@@ -97,6 +103,8 @@ const AiCourseCreatorModal = ({
         }
       } catch (e) {
         setError(intl.formatMessage(messages.genericError));
+      } finally {
+        _greetingInFlight.delete(courseId);
       }
     })();
   }, [isOpen, hasInitialised, courseId, runChat, intl]);
@@ -166,28 +174,54 @@ const AiCourseCreatorModal = ({
     }
     setChatMessages([]);
     setMaterials([]);
-    setHasCourseJson(false);
+    setGenResult(null);
     setCurrentPhase(1);
     setInputValue('');
     await runChat('');
   };
 
   const handleGenerate = async () => {
-    setIsApplying(true);
     setError('');
+    setGenResult(null);
+    setIsGenerating(true);
+    setGenProgress(intl.formatMessage(messages.generateStarting));
     try {
-      const result = await applyOutline(courseId);
-      onApplied(result);
+      const { counts } = await streamGenerate(courseId, {
+        onProgress: (message) => setGenProgress(message),
+      });
+      setGenResult(counts);
     } catch (e) {
-      setError(intl.formatMessage(messages.genericError));
-      setIsApplying(false);
+      const detail = e instanceof Error && e.message ? e.message : '';
+      setError(detail || intl.formatMessage(messages.genericError));
+    } finally {
+      setIsGenerating(false);
+      setGenProgress('');
     }
   };
+
+  const handleGoToOutline = () => {
+    if (genResult) {
+      onApplied({ counts: genResult });
+    }
+  };
+
+  const canGenerate = currentPhase >= 4;
 
   return (
     <>
       <style>
-        {'.ai-sherab-modal .modal-xl { max-width: min(95vw, 1500px) !important; }'}
+        {`.ai-sherab-modal .modal-xl { max-width: min(95vw, 1500px) !important; }
+          .ai-gen-spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: ai-gen-spin 0.75s linear infinite;
+            vertical-align: -0.125em;
+          }
+          @keyframes ai-gen-spin { to { transform: rotate(360deg); } }`}
       </style>
 
       <AlertModal
@@ -226,6 +260,27 @@ const AiCourseCreatorModal = ({
         </ModalDialog.Header>
         <ModalDialog.Body>
           {error && <Alert variant="danger" onClose={() => setError('')} dismissible>{error}</Alert>}
+          {isGenerating && (
+            <Alert variant="info">
+              <div className="d-flex align-items-center">
+                <span className="ai-gen-spinner mr-2" aria-hidden="true" />
+                {genProgress || intl.formatMessage(messages.generateStarting)}
+              </div>
+            </Alert>
+          )}
+          {genResult && (
+            <Alert variant="success">
+              <Alert.Heading>{intl.formatMessage(messages.generateDoneTitle)}</Alert.Heading>
+              <p className="mb-0">
+                {intl.formatMessage(messages.generateSuccess, {
+                  sections: genResult.sections,
+                  subsections: genResult.subsections,
+                  units: genResult.units,
+                  components: genResult.components,
+                })}
+              </p>
+            </Alert>
+          )}
           <div className="d-flex" style={{ gap: '1rem' }}>
             {/* Chat column */}
             <div className="flex-grow-1 d-flex flex-column" style={{ minWidth: 0 }}>
@@ -244,7 +299,7 @@ const AiCourseCreatorModal = ({
                       ? <ChatMessageBubble author="assistant" content={stripPhaseMarker(stripCourseJson(streamingText))} />
                       : (
                         <div className="d-flex align-items-center text-muted">
-                          <Spinner animation="border" size="sm" className="mr-2" screenReaderText="loading" />
+                          <span className="ai-gen-spinner mr-2" aria-hidden="true" />
                           {intl.formatMessage(messages.thinking)}
                         </div>
                       )
@@ -272,7 +327,7 @@ const AiCourseCreatorModal = ({
                       }
                     }}
                     placeholder={intl.formatMessage(messages.inputPlaceholder)}
-                    disabled={isStreaming}
+                    disabled={isStreaming || isGenerating}
                     style={{
                       resize: 'none',
                       overflowY: 'hidden',
@@ -286,7 +341,7 @@ const AiCourseCreatorModal = ({
                   <button
                     type="button"
                     onClick={handleSend}
-                    disabled={isStreaming || !inputValue.trim()}
+                    disabled={isStreaming || isGenerating || !inputValue.trim()}
                     aria-label={intl.formatMessage(messages.sendButton)}
                     style={{
                       background: 'none',
@@ -325,7 +380,7 @@ const AiCourseCreatorModal = ({
               variant="tertiary"
               iconBefore={RefreshIcon}
               onClick={handleReset}
-              disabled={isStreaming || isApplying}
+              disabled={isStreaming || isGenerating}
             >
               {intl.formatMessage(messages.resetButton)}
             </Button>
@@ -333,15 +388,23 @@ const AiCourseCreatorModal = ({
             <Button variant="tertiary" onClick={onClose}>
               {intl.formatMessage(messages.closeButton)}
             </Button>
-            <Button
-              variant="primary"
-              iconBefore={SparkleIcon}
-              onClick={handleGenerate}
-              disabled={!hasCourseJson || isApplying || isStreaming}
-            >
-              {isApplying && <Spinner animation="border" size="sm" className="mr-2" screenReaderText="loading" />}
-              {isApplying ? intl.formatMessage(messages.generating) : intl.formatMessage(messages.generateButton)}
-            </Button>
+            {genResult ? (
+              <Button variant="success" onClick={handleGoToOutline}>
+                {intl.formatMessage(messages.goToOutlineButton)}
+              </Button>
+            ) : (
+              <Button
+                variant="primary"
+                iconBefore={SparkleIcon}
+                onClick={handleGenerate}
+                disabled={!canGenerate || isGenerating || isStreaming}
+              >
+                {isGenerating && <span className="ai-gen-spinner mr-2" aria-hidden="true" />}
+                {isGenerating
+                  ? intl.formatMessage(messages.generating)
+                  : intl.formatMessage(error ? messages.retryGenerateButton : messages.generateButton)}
+              </Button>
+            )}
           </ActionRow>
         </ModalDialog.Footer>
       </ModalDialog>

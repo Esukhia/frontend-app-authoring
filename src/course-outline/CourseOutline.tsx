@@ -39,6 +39,7 @@ import { NOTIFICATION_MESSAGES } from '@src/constants';
 import { COMPONENT_TYPES } from '@src/generic/block-type-utils/constants';
 import { XBlock } from '@src/data/types';
 import { AiCourseCreatorModal } from '@src/ai-course-creator';
+import { getAiConfig } from '@src/ai-course-creator/data/api';
 import aiMessages from '@src/ai-course-creator/messages';
 import {
   getCurrentItem,
@@ -154,6 +155,14 @@ const CourseOutline = ({ courseId }: CourseOutlineProps) => {
 
   // AI course-creator chatbot modal (shown from the empty outline).
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [isAiEnabled, setIsAiEnabled] = useState(false);
+  useEffect(() => {
+    let active = true;
+    getAiConfig()
+      .then(({ enabled }) => { if (active) { setIsAiEnabled(Boolean(enabled)); } })
+      .catch(() => { if (active) { setIsAiEnabled(false); } });
+    return () => { active = false; };
+  }, []);
   const handleAiApplied = useCallback((summary: {
     counts: { sections: number; subsections: number; units: number; components: number };
   }) => {
@@ -496,7 +505,7 @@ const CourseOutline = ({ courseId }: CourseOutlineProps) => {
                         ) : (
                           <EmptyPlaceholder>
                             <>
-                              {courseActions.childAddable && (
+                              {courseActions.childAddable && isAiEnabled && (
                                 <div className="d-flex flex-column align-items-center mb-3">
                                   <Button
                                     variant="primary"
