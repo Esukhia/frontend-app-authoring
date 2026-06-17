@@ -130,6 +130,15 @@ const AiCourseCreatorModal = ({
 
   useEffect(() => { scrollToBottom(); }, [chatMessages, streamingText, scrollToBottom]);
 
+  // Return focus to the input once the modal is open and ready (i.e. not mid-
+  // reply or mid-generation), so the creator can keep typing without clicking
+  // back into the textarea after each exchange.
+  useEffect(() => {
+    if (isOpen && !isStreaming && !isGenerating) {
+      textareaRef.current?.focus();
+    }
+  }, [isOpen, isStreaming, isGenerating]);
+
   const resetTextareaHeight = () => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
