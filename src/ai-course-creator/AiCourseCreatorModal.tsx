@@ -41,7 +41,7 @@ interface Props {
 // Module-level guard: prevents concurrent greeting calls when the modal
 // remounts (e.g. close/reopen) before the first getSession call completes.
 // JS is single-threaded so the has/add check before the first await is atomic.
-const _greetingInFlight = new Set<string>();
+const greetingInFlight = new Set<string>();
 
 const AiCourseCreatorModal = ({
   courseId, isOpen, onClose, onApplied,
@@ -68,15 +68,34 @@ const AiCourseCreatorModal = ({
     threadEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
-  const runChat = useCallback(async (message: string) => {
+  const runChat = useCallback(async (message: string, opts: { editMessageId?: number } = {}) => {
     setError('');
     setIsStreaming(true);
     setStreamingText('');
+    // Attach a server id to the most recent user message still lacking one, so
+    // it stays editable. Fired from the early "meta" frame, so it lands even if
+    // the stream later errors out before "done".
+    const tagUserMessage = (id: number) => setChatMessages((prev) => {
+      const next = [...prev];
+      for (let i = next.length - 1; i >= 0; i -= 1) {
+        if (next[i].role === 'user' && next[i].id === undefined) {
+          next[i] = { ...next[i], id };
+          break;
+        }
+      }
+      return next;
+    });
     try {
-      const { fullText, currentPhase: newPhase } = await streamChat(courseId, message, {
+      const { fullText, currentPhase: newPhase, assistantMessageId } = await streamChat(courseId, message, {
+        editMessageId: opts.editMessageId,
         onToken: (text) => setStreamingText((prev) => prev + text),
+        onUserMessageId: tagUserMessage,
       });
-      setChatMessages((prev) => [...prev, { role: 'assistant', content: stripPhaseMarker(stripCourseJson(fullText)) }]);
+      setChatMessages((prev) => [...prev, {
+        role: 'assistant',
+        content: stripPhaseMarker(stripCourseJson(fullText)),
+        id: assistantMessageId,
+      }]);
       setCurrentPhase(newPhase);
     } catch (e) {
       const detail = e instanceof Error && e.message ? e.message : '';
@@ -88,8 +107,8 @@ const AiCourseCreatorModal = ({
   }, [courseId, intl]);
 
   useEffect(() => {
-    if (!isOpen || hasInitialised || _greetingInFlight.has(courseId)) { return; }
-    _greetingInFlight.add(courseId);
+    if (!isOpen || hasInitialised || greetingInFlight.has(courseId)) { return; }
+    greetingInFlight.add(courseId);
     setHasInitialised(true);
     (async () => {
       try {
@@ -97,14 +116,14 @@ const AiCourseCreatorModal = ({
         setMaterials(session.materials || []);
         setCurrentPhase(session.currentPhase || 1);
         if (session.messages && session.messages.length) {
-          setChatMessages(session.messages.map((m) => ({ role: m.role, content: m.content })));
+          setChatMessages(session.messages.map((m) => ({ id: m.id, role: m.role, content: m.content })));
         } else {
           await runChat('');
         }
       } catch (e) {
         setError(intl.formatMessage(messages.genericError));
       } finally {
-        _greetingInFlight.delete(courseId);
+        greetingInFlight.delete(courseId);
       }
     })();
   }, [isOpen, hasInitialised, courseId, runChat, intl]);
@@ -125,6 +144,21 @@ const AiCourseCreatorModal = ({
     setInputValue('');
     resetTextareaHeight();
     runChat(message);
+  };
+
+  // Edit & resend a previous user message: truncate the thread back to that
+  // message, replace it with the edited text, and re-ask from there. The backend
+  // drops the stale reply and everything after it (keyed by the message id).
+  const handleEditMessage = (index: number, newContent: string) => {
+    const target = chatMessages[index];
+    const text = newContent.trim();
+    if (!target || target.role !== 'user' || target.id === undefined) { return; }
+    if (!text || isStreaming || isGenerating) { return; }
+    setChatMessages((prev) => [
+      ...prev.slice(0, index),
+      { role: 'user', content: text },
+    ]);
+    runChat(text, { editMessageId: target.id });
   };
 
   const handleUploadFile = async (file: File) => {
@@ -221,7 +255,10 @@ const AiCourseCreatorModal = ({
             animation: ai-gen-spin 0.75s linear infinite;
             vertical-align: -0.125em;
           }
-          @keyframes ai-gen-spin { to { transform: rotate(360deg); } }`}
+          @keyframes ai-gen-spin { to { transform: rotate(360deg); } }
+          .ai-chat-edit-btn { opacity: 0; transition: opacity 0.15s ease-in-out; }
+          .ai-chat-bubble-row:hover .ai-chat-edit-btn,
+          .ai-chat-edit-btn:focus { opacity: 1; }`}
       </style>
 
       <AlertModal
@@ -291,8 +328,19 @@ const AiCourseCreatorModal = ({
               >
                 <div className="p-3 flex-grow-1" style={{ overflowY: 'auto' }}>
                   {chatMessages.map((message, idx) => (
-                    // eslint-disable-next-line react/no-array-index-key
-                    <ChatMessageBubble key={idx} author={message.role} content={message.content} />
+                    <ChatMessageBubble
+                      // eslint-disable-next-line react/no-array-index-key
+                      key={idx}
+                      author={message.role}
+                      content={message.content}
+                      canEdit={
+                        message.role === 'user'
+                        && message.id !== undefined
+                        && !isStreaming
+                        && !isGenerating
+                      }
+                      onEdit={(newContent) => handleEditMessage(idx, newContent)}
+                    />
                   ))}
                   {isStreaming && (
                     streamingText

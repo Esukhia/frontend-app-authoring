@@ -131,6 +131,26 @@ const messages = defineMessages({
     defaultMessage: 'Remove {name}',
     description: 'Accessible label for the remove-material button',
   },
+  editMessage: {
+    id: 'course-authoring.ai-course-creator.message.edit',
+    defaultMessage: 'Edit message',
+    description: 'Accessible label for the edit button on a sent user message',
+  },
+  saveEdit: {
+    id: 'course-authoring.ai-course-creator.message.edit.save',
+    defaultMessage: 'Save & resend',
+    description: 'Button that saves an edited message and resends it',
+  },
+  cancelEdit: {
+    id: 'course-authoring.ai-course-creator.message.edit.cancel',
+    defaultMessage: 'Cancel',
+    description: 'Button that cancels editing a message',
+  },
+  editWarning: {
+    id: 'course-authoring.ai-course-creator.message.edit.warning',
+    defaultMessage: 'Editing this message will discard the replies that came after it.',
+    description: 'Helper text shown while editing a previous message',
+  },
   phaseLabel1: {
     id: 'course-authoring.ai-course-creator.phase.label.1',
     defaultMessage: 'Learner',

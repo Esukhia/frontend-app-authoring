@@ -79,8 +79,21 @@ const resolveCsrfToken = async (): Promise<string> => {
 export async function streamChat(
   courseId: string,
   message: string,
-  { onToken, signal }: { onToken: (text: string) => void; signal?: AbortSignal },
-): Promise<{ fullText: string; hasCourseJson: boolean; currentPhase: number }> {
+  {
+    onToken, signal, editMessageId, onUserMessageId,
+  }: {
+    onToken: (text: string) => void;
+    signal?: AbortSignal;
+    editMessageId?: number;
+    onUserMessageId?: (id: number) => void;
+  },
+): Promise<{
+    fullText: string;
+    hasCourseJson: boolean;
+    currentPhase: number;
+    userMessageId?: number;
+    assistantMessageId?: number;
+  }> {
   const csrfToken = await resolveCsrfToken();
   const response = await fetch(getChatUrl(), {
     method: 'POST',
@@ -90,7 +103,11 @@ export async function streamChat(
       'Content-Type': 'application/json',
       'X-CSRFToken': csrfToken,
     },
-    body: JSON.stringify({ course_id: courseId, message }),
+    body: JSON.stringify({
+      course_id: courseId,
+      message,
+      ...(editMessageId !== undefined ? { edit_message_id: editMessageId } : {}),
+    }),
   });
 
   if (!response.ok || !response.body) {
@@ -103,18 +120,27 @@ export async function streamChat(
   let fullText = '';
   let hasCourseJson = false;
   let currentPhase = 1;
+  let userMessageId: number | undefined;
+  let assistantMessageId: number | undefined;
 
   const handleFrame = (frame: string) => {
     const line = frame.split('\n').find((l) => l.startsWith('data:'));
     if (!line) { return; }
     try {
       const payload = JSON.parse(line.slice(5).trim());
-      if (payload.type === 'token') {
+      if (payload.type === 'meta') {
+        if (payload.userMessageId) {
+          userMessageId = payload.userMessageId;
+          onUserMessageId?.(payload.userMessageId);
+        }
+      } else if (payload.type === 'token') {
         fullText += payload.text;
         onToken(payload.text);
       } else if (payload.type === 'done') {
         hasCourseJson = Boolean(payload.hasCourseJson);
         if (payload.currentPhase) { currentPhase = payload.currentPhase; }
+        if (payload.userMessageId) { userMessageId = payload.userMessageId; }
+        if (payload.assistantMessageId) { assistantMessageId = payload.assistantMessageId; }
       } else if (payload.type === 'error') {
         throw new Error(payload.error);
       }
@@ -138,7 +164,9 @@ export async function streamChat(
   }
   if (buffer.trim()) { handleFrame(buffer); }
 
-  return { fullText, hasCourseJson, currentPhase };
+  return {
+    fullText, hasCourseJson, currentPhase, userMessageId, assistantMessageId,
+  };
 }
 
 /** Upload a material file. */
