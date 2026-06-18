@@ -1,6 +1,9 @@
 export const COURSE_JSON_START = '===COURSE_JSON_START===';
 export const COURSE_JSON_END = '===COURSE_JSON_END===';
 
+export const SECTION_EDITS_START = '===SECTION_EDITS_START===';
+export const SECTION_EDITS_END = '===SECTION_EDITS_END===';
+
 export const PHASE_MARKER_RE = /===SHERAB_PHASE:\d+===/g;
 
 // Matches a complete OR partially-streamed marker at the very start of a message,
@@ -28,4 +31,22 @@ export const stripCourseJson = (text: string): string => {
   const endIdx = text.indexOf(COURSE_JSON_END);
   const after = endIdx === -1 ? '' : text.slice(endIdx + COURSE_JSON_END.length);
   return (before + after).trim();
+};
+
+/**
+ * Remove the machine-readable SECTION_EDITS block from a per-section editor
+ * reply. Handles the still-open case while streaming (drops everything from the
+ * opening marker on, plus a partially-typed opening marker at the tail) so the
+ * raw JSON never flashes on screen.
+ */
+export const stripSectionEdits = (text: string): string => {
+  const startIdx = text.indexOf(SECTION_EDITS_START);
+  if (startIdx !== -1) {
+    const before = text.slice(0, startIdx);
+    const endIdx = text.indexOf(SECTION_EDITS_END);
+    const after = endIdx === -1 ? '' : text.slice(endIdx + SECTION_EDITS_END.length);
+    return (before + after).trim();
+  }
+  // Hide a partial opening marker as it streams in (e.g. "===SECTION_ED").
+  return text.replace(/===S?E?C?T?I?O?N?_?E?D?I?T?S?_?S?T?A?R?T?=*$/, '').trim();
 };

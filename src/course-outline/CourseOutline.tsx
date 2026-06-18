@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import {
   Button,
+  Card,
   Container,
   Layout,
   Row,
@@ -38,7 +39,7 @@ import { ContentType } from '@src/library-authoring/routes';
 import { NOTIFICATION_MESSAGES } from '@src/constants';
 import { COMPONENT_TYPES } from '@src/generic/block-type-utils/constants';
 import { XBlock } from '@src/data/types';
-import { AiCourseCreatorModal } from '@src/ai-course-creator';
+import { AiCourseCreatorModal, SectionEditorSidebar } from '@src/ai-course-creator';
 import { getAiConfig } from '@src/ai-course-creator/data/api';
 import aiMessages from '@src/ai-course-creator/messages';
 import {
@@ -174,6 +175,23 @@ const CourseOutline = ({ courseId }: CourseOutlineProps) => {
       components: summary.counts.components,
     }));
     // Reload the outline so the freshly created structure appears.
+    dispatch(fetchCourseOutlineIndexQuery(courseId));
+  }, [dispatch, courseId, intl]);
+
+  // Per-section AI editor ("Edit with SherabAI"), shown on a populated outline.
+  const [isSectionEditorOpen, setIsSectionEditorOpen] = useState(false);
+  const handleSectionApplied = useCallback((summary: {
+    sectionName: string;
+    counts: { updated: number; created: number; deleted: number; reordered: number };
+  }) => {
+    setIsSectionEditorOpen(false);
+    setToastMessage(intl.formatMessage(aiMessages.sectionApplySuccess, {
+      sectionName: summary.sectionName,
+      updated: summary.counts.updated,
+      created: summary.counts.created,
+      deleted: summary.counts.deleted,
+    }));
+    // Reload the outline so the edited section reflects the changes.
     dispatch(fetchCourseOutlineIndexQuery(courseId));
   }, [dispatch, courseId, intl]);
 
@@ -384,6 +402,28 @@ const CourseOutline = ({ courseId }: CourseOutlineProps) => {
                       <div className="pt-4">
                         {sections.length ? (
                           <>
+                            {isAiEnabled && courseActions.childAddable && (
+                              <Card className="mb-3" style={{ background: 'rgba(106, 75, 255, 0.06)' }}>
+                                <Card.Section className="d-flex align-items-center justify-content-between">
+                                  <div className="mr-3">
+                                    <div className="font-weight-bold">
+                                      {intl.formatMessage(aiMessages.sectionBannerTitle)}
+                                    </div>
+                                    <div className="small text-gray-600">
+                                      {intl.formatMessage(aiMessages.sectionBannerSubtitle)}
+                                    </div>
+                                  </div>
+                                  <Button
+                                    variant="primary"
+                                    iconBefore={SparkleIcon}
+                                    onClick={() => setIsSectionEditorOpen(true)}
+                                    style={{ flexShrink: 0 }}
+                                  >
+                                    {intl.formatMessage(aiMessages.sectionEditButton)}
+                                  </Button>
+                                </Card.Section>
+                              </Card>
+                            )}
                             <DraggableList
                               items={sections}
                               setSections={setSections}
@@ -606,6 +646,13 @@ const CourseOutline = ({ courseId }: CourseOutlineProps) => {
             onApplied={handleAiApplied}
           />
         )}
+        <SectionEditorSidebar
+          courseId={courseId}
+          isOpen={isSectionEditorOpen}
+          sections={sectionsList.map((s) => ({ usageKey: s.usageKey || s.id, displayName: s.displayName }))}
+          onClose={() => setIsSectionEditorOpen(false)}
+          onApplied={handleSectionApplied}
+        />
       </Container>
       <div className="alert-toast">
         <ProcessingNotification
