@@ -39,9 +39,7 @@ const MaterialDropzone = ({
 
   const handleSubmitLink = () => {
     const url = linkValue.trim();
-    if (url) {
-      onUploadLink(url);
-    }
+    if (url) { onUploadLink(url); }
     setLinkValue('');
     setIsAddingLink(false);
   };
@@ -53,60 +51,24 @@ const MaterialDropzone = ({
 
   return (
     <div>
-      <div className="d-flex justify-content-between align-items-center mb-2">
-        <span className="small font-weight-bold text-muted text-uppercase">
+      {/* Header */}
+      <div className="mb-3">
+        <span className="small font-weight-bold text-uppercase text-muted">
           {intl.formatMessage(messages.materialsHeading)}
         </span>
-        {!isAddingLink && (
-          <Button variant="link" size="sm" onClick={() => setIsAddingLink(true)} style={{ padding: 0, fontSize: '0.8125rem' }}>
-            + {intl.formatMessage(messages.addLinkButton)}
-          </Button>
-        )}
+        <p className="small text-muted mb-0 mt-1" style={{ lineHeight: 1.4 }}>
+          Share slides, docs, videos or links and Sherab will build your course around them.
+        </p>
       </div>
 
-      {isAddingLink && (
-        <div className="mb-2">
-          <Form.Control
-            // eslint-disable-next-line jsx-a11y/no-autofocus
-            autoFocus
-            type="url"
-            value={linkValue}
-            onChange={(e) => setLinkValue(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') { handleSubmitLink(); }
-              if (e.key === 'Escape') { handleCancelLink(); }
-            }}
-            placeholder={intl.formatMessage(messages.addLinkPlaceholder)}
-            className="mb-2"
-          />
-          <div className="d-flex" style={{ gap: '0.5rem' }}>
-            <Button
-              variant="primary"
-              size="sm"
-              iconBefore={CheckIcon}
-              onClick={handleSubmitLink}
-              disabled={!linkValue.trim()}
-            >
-              {intl.formatMessage(messages.addLinkConfirm)}
-            </Button>
-            <Button
-              variant="tertiary"
-              size="sm"
-              onClick={handleCancelLink}
-            >
-              {intl.formatMessage(messages.cancelButton)}
-            </Button>
-          </div>
-        </div>
-      )}
-
+      {/* File drop zone */}
       <button
         type="button"
         className="d-block w-100 rounded text-center"
         style={{
-          padding: '1.5rem 1rem',
+          padding: '1.25rem 1rem',
           border: `2px dashed ${isDragging ? '#0076BD' : '#ced4da'}`,
-          background: isDragging ? 'rgba(0,118,189,0.04)' : '#fafafa',
+          background: isDragging ? 'rgba(0,118,189,0.06)' : '#f8f9fa',
           cursor: 'pointer',
           transition: 'border-color 0.15s ease, background 0.15s ease',
         }}
@@ -124,12 +86,15 @@ const MaterialDropzone = ({
         ) : (
           <Icon
             src={UploadIcon}
-            style={{ width: '1.75rem', height: '1.75rem' }}
-            className="text-muted"
+            style={{ width: '1.5rem', height: '1.5rem' }}
+            className={isDragging ? 'text-primary' : 'text-muted'}
           />
         )}
-        <p className="small text-muted mb-0 mt-1" style={{ lineHeight: 1.3 }}>
-          {intl.formatMessage(messages.dropzoneLabel)}
+        <p className="small font-weight-bold mb-0 mt-1">
+          {isDragging ? 'Drop to upload' : 'Drag & drop or click to browse'}
+        </p>
+        <p className="small text-muted mb-0" style={{ fontSize: '0.75rem' }}>
+          PDF, DOCX, PPTX, TXT
         </p>
       </button>
       <input
@@ -141,8 +106,62 @@ const MaterialDropzone = ({
         onChange={(e) => handleFiles(e.target.files)}
       />
 
+      {/* Divider */}
+      <div className="d-flex align-items-center my-3" style={{ gap: '0.5rem' }}>
+        <hr className="flex-grow-1 my-0" style={{ borderColor: '#dee2e6' }} />
+        <span className="small text-muted px-1">or</span>
+        <hr className="flex-grow-1 my-0" style={{ borderColor: '#dee2e6' }} />
+      </div>
+
+      {/* Link section */}
+      {isAddingLink ? (
+        <div>
+          <Form.Control
+            // eslint-disable-next-line jsx-a11y/no-autofocus
+            autoFocus
+            type="url"
+            value={linkValue}
+            onChange={(e) => setLinkValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') { handleSubmitLink(); }
+              if (e.key === 'Escape') { handleCancelLink(); }
+            }}
+            placeholder={intl.formatMessage(messages.addLinkPlaceholder)}
+            className="mb-2"
+          />
+          <p className="small text-muted mb-2" style={{ fontSize: '0.75rem' }}>
+            Google Docs, YouTube, Canva, Notion, any public URL
+          </p>
+          <div className="d-flex" style={{ gap: '0.5rem' }}>
+            <Button
+              variant="primary"
+              size="sm"
+              iconBefore={CheckIcon}
+              onClick={handleSubmitLink}
+              disabled={!linkValue.trim()}
+            >
+              {intl.formatMessage(messages.addLinkConfirm)}
+            </Button>
+            <Button variant="tertiary" size="sm" onClick={handleCancelLink}>
+              {intl.formatMessage(messages.cancelButton)}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <Button
+          variant="outline-primary"
+          className="w-100"
+          size="sm"
+          iconBefore={LinkIcon}
+          onClick={() => setIsAddingLink(true)}
+        >
+          {intl.formatMessage(messages.addLinkButton)}
+        </Button>
+      )}
+
+      {/* Material list */}
       {materials.length > 0 && (
-        <div className="mt-2 border rounded" style={{ overflow: 'hidden' }}>
+        <div className="mt-3 border rounded" style={{ overflow: 'hidden' }}>
           {materials.map((material, idx) => (
             <div
               key={material.id}
