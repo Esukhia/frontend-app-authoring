@@ -31,7 +31,13 @@ const PhaseIndicator = ({ currentPhase }: Props) => {
         const dotBg = isCompleted || isActive ? BRAND : '#fff';
         const dotBorder = isCompleted || isActive ? BRAND : MUTED;
         const dotColor = isCompleted || isActive ? '#fff' : MUTED;
-        const labelColor = isActive ? BRAND : isCompleted ? '#495057' : MUTED;
+
+        let labelColor = MUTED;
+        if (isActive) {
+          labelColor = BRAND;
+        } else if (isCompleted) {
+          labelColor = '#495057';
+        }
 
         return (
           <Fragment key={phase}>
