@@ -524,7 +524,7 @@ const CourseOutline = ({ courseId }: CourseOutlineProps) => {
                                   handleNewButtonClick={handleNewSectionSubmit}
                                   handleUseFromLibraryClick={openAddLibrarySectionModal}
                                   childType={ContainerType.Section}
-                                  btnVariant="outline-primary"
+                                  btnVariant="primary"
                                   btnClasses="mt-1"
                                 />
                               )}
