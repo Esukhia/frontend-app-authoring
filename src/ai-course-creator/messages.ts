@@ -171,6 +171,77 @@ const messages = defineMessages({
     defaultMessage: 'Generate',
     description: 'Label for phase 4 (Course Generation) in the phase indicator',
   },
+  // --- Per-section editor ("Edit with SherabAI") ---
+  sectionBannerTitle: {
+    id: 'course-authoring.ai-course-creator.section.banner.title',
+    defaultMessage: 'Optimize your course with AI',
+    description: 'Title of the banner above the section list that opens the section editor',
+  },
+  sectionBannerSubtitle: {
+    id: 'course-authoring.ai-course-creator.section.banner.subtitle',
+    defaultMessage: 'Generate objectives, simplify content, or get custom help for your sections.',
+    description: 'Subtitle of the section-editor banner',
+  },
+  sectionEditButton: {
+    id: 'course-authoring.ai-course-creator.section.edit.button',
+    defaultMessage: 'Edit with SherabAI',
+    description: 'Button that opens the per-section AI editor sidebar',
+  },
+  sectionEditorTitle: {
+    id: 'course-authoring.ai-course-creator.section.editor.title',
+    defaultMessage: 'Edit with SherabAI',
+    description: 'Title of the section editor sidebar',
+  },
+  sectionSelectLabel: {
+    id: 'course-authoring.ai-course-creator.section.select.label',
+    defaultMessage: 'Choose a section to edit',
+    description: 'Label for the section dropdown in the editor sidebar',
+  },
+  sectionSelectPlaceholder: {
+    id: 'course-authoring.ai-course-creator.section.select.placeholder',
+    defaultMessage: 'Select a section…',
+    description: 'Placeholder option in the section dropdown',
+  },
+  sectionSelectHint: {
+    id: 'course-authoring.ai-course-creator.section.select.hint',
+    defaultMessage: 'Pick a section above to start editing it with Sherab.',
+    description: 'Hint shown before a section is selected',
+  },
+  zeroToHeroHeading: {
+    id: 'course-authoring.ai-course-creator.section.zero-to-hero',
+    defaultMessage: 'Zero-to-hero: {sectionName}',
+    description: 'Sub-heading shown above the chat once a section is selected',
+  },
+  sectionApplyButton: {
+    id: 'course-authoring.ai-course-creator.section.apply.button',
+    defaultMessage: 'Apply changes',
+    description: 'Button that commits the proposed section edits',
+  },
+  sectionApplyHint: {
+    id: 'course-authoring.ai-course-creator.section.apply.hint',
+    defaultMessage: 'Chat to propose changes, then apply them.',
+    description: 'Helper text shown next to the apply button before changes are ready',
+  },
+  sectionApplyReady: {
+    id: 'course-authoring.ai-course-creator.section.apply.ready',
+    defaultMessage: 'Changes ready to apply (saved as draft).',
+    description: 'Helper text shown when the assistant has proposed applyable changes',
+  },
+  sectionApplying: {
+    id: 'course-authoring.ai-course-creator.section.applying',
+    defaultMessage: 'Applying…',
+    description: 'Shown on the apply button while edits are being committed',
+  },
+  sectionApplySuccess: {
+    id: 'course-authoring.ai-course-creator.section.apply.success',
+    defaultMessage: 'Updated “{sectionName}”: {updated} edited, {created} added, {deleted} removed.',
+    description: 'Toast after section edits are applied',
+  },
+  closeSidebar: {
+    id: 'course-authoring.ai-course-creator.section.close',
+    defaultMessage: 'Close',
+    description: 'Accessible label for the sidebar close button',
+  },
 });
 
 export default messages;

@@ -9,6 +9,9 @@ export const getGenerateUrl = () => `${getApiBaseUrl()}/api/ai-course-creator/ge
 export const getConfigUrl = () => `${getApiBaseUrl()}/api/ai-course-creator/config/`;
 export const getSessionUrl = (courseId: string) => `${getApiBaseUrl()}/api/ai-course-creator/session/?course_id=${encodeURIComponent(courseId)}`;
 export const getMaterialUrl = (id: number) => `${getApiBaseUrl()}/api/ai-course-creator/material/${id}/`;
+export const getSectionChatUrl = () => `${getApiBaseUrl()}/api/ai-course-creator/section-chat/`;
+export const getApplySectionUrl = () => `${getApiBaseUrl()}/api/ai-course-creator/apply-section/`;
+export const getSectionContentUrl = (courseId: string, sectionLocator: string) => `${getApiBaseUrl()}/api/ai-course-creator/section-content/?course_id=${encodeURIComponent(courseId)}&section_locator=${encodeURIComponent(sectionLocator)}`;
 
 export interface ChatMessageData {
   id?: number;
@@ -26,10 +29,12 @@ export interface MaterialData {
 export interface SessionData {
   id: number;
   courseId: string;
+  sectionLocator?: string;
   status: string;
   messages: ChatMessageData[];
   materials: MaterialData[];
   hasCourseJson: boolean;
+  canApply?: boolean;
   currentPhase: number;
   generationStatus: string;
   generationError: string;
@@ -40,6 +45,20 @@ export interface GenerateCounts {
   subsections: number;
   units: number;
   components: number;
+}
+
+export interface SectionApplyCounts {
+  updated: number;
+  created: number;
+  deleted: number;
+  reordered: number;
+}
+
+export interface SectionApplyResult {
+  sectionName: string;
+  counts: SectionApplyCounts;
+  rejected: Array<{ target: string; reason: string }>;
+  errors: Array<{ target: string; reason: string }>;
 }
 
 /** Read the Django CSRF token from cookies (only works same-domain). */
@@ -273,7 +292,130 @@ export async function resetSession(courseId: string): Promise<void> {
   await getAuthenticatedHttpClient().delete(getSessionUrl(courseId));
 }
 
+/** Reset just one section's editor conversation. */
+export async function resetSectionSession(courseId: string, sectionLocator: string): Promise<void> {
+  const url = `${getSessionUrl(courseId)}&section_locator=${encodeURIComponent(sectionLocator)}`;
+  await getAuthenticatedHttpClient().delete(url);
+}
+
+/** Fetch one section's saved editor conversation so the sidebar can resume it. */
+export async function getSectionSession(courseId: string, sectionLocator: string): Promise<SessionData> {
+  const url = `${getSessionUrl(courseId)}&section_locator=${encodeURIComponent(sectionLocator)}`;
+  const { data } = await getAuthenticatedHttpClient().get(url);
+  return camelCaseObject(data);
+}
+
 /** Delete a single uploaded material. */
 export async function deleteMaterial(id: number): Promise<void> {
   await getAuthenticatedHttpClient().delete(getMaterialUrl(id));
+}
+
+/**
+ * Stream a per-section editor reply via SSE.
+ *
+ * Mirrors `streamChat`, scoped to one section (`sectionLocator`). The `done`
+ * frame reports `canApply` when the assistant has produced changes that the
+ * user can commit via `applySectionEdits`.
+ */
+export async function streamSectionChat(
+  courseId: string,
+  sectionLocator: string,
+  message: string,
+  {
+    onToken, signal, editMessageId, onUserMessageId,
+  }: {
+    onToken: (text: string) => void;
+    signal?: AbortSignal;
+    editMessageId?: number;
+    onUserMessageId?: (id: number) => void;
+  },
+): Promise<{
+    fullText: string;
+    canApply: boolean;
+    userMessageId?: number;
+    assistantMessageId?: number;
+  }> {
+  const csrfToken = await resolveCsrfToken();
+  const response = await fetch(getSectionChatUrl(), {
+    method: 'POST',
+    credentials: 'include',
+    signal,
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken,
+    },
+    body: JSON.stringify({
+      course_id: courseId,
+      section_locator: sectionLocator,
+      message,
+      ...(editMessageId !== undefined ? { edit_message_id: editMessageId } : {}),
+    }),
+  });
+
+  if (!response.ok || !response.body) {
+    throw new Error(`Section chat request failed (${response.status})`);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let fullText = '';
+  let canApply = false;
+  let userMessageId: number | undefined;
+  let assistantMessageId: number | undefined;
+
+  const handleFrame = (frame: string) => {
+    const line = frame.split('\n').find((l) => l.startsWith('data:'));
+    if (!line) { return; }
+    try {
+      const payload = JSON.parse(line.slice(5).trim());
+      if (payload.type === 'meta') {
+        if (payload.userMessageId) {
+          userMessageId = payload.userMessageId;
+          onUserMessageId?.(payload.userMessageId);
+        }
+      } else if (payload.type === 'token') {
+        fullText += payload.text;
+        onToken(payload.text);
+      } else if (payload.type === 'done') {
+        canApply = Boolean(payload.canApply);
+        if (payload.userMessageId) { userMessageId = payload.userMessageId; }
+        if (payload.assistantMessageId) { assistantMessageId = payload.assistantMessageId; }
+      } else if (payload.type === 'error') {
+        throw new Error(payload.error);
+      }
+    } catch (e) {
+      if (e instanceof Error && e.message && !e.message.includes('JSON')) {
+        throw e;
+      }
+    }
+  };
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    // eslint-disable-next-line no-await-in-loop
+    const { value, done } = await reader.read();
+    if (done) { break; }
+    buffer += decoder.decode(value, { stream: true });
+    const frames = buffer.split('\n\n');
+    buffer = frames.pop() || '';
+    frames.forEach(handleFrame);
+  }
+  if (buffer.trim()) { handleFrame(buffer); }
+
+  return {
+    fullText, canApply, userMessageId, assistantMessageId,
+  };
+}
+
+/** Apply the most recently proposed edits for a section. */
+export async function applySectionEdits(
+  courseId: string,
+  sectionLocator: string,
+): Promise<SectionApplyResult> {
+  const { data } = await getAuthenticatedHttpClient().post(getApplySectionUrl(), {
+    course_id: courseId,
+    section_locator: sectionLocator,
+  });
+  return camelCaseObject(data);
 }
