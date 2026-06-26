@@ -71,7 +71,6 @@ const SectionEditorSidebar = ({
 
   const chatMessages = selectedKey ? (chatBySection[selectedKey] || []) : [];
   const canApply = selectedKey ? Boolean(canApplyBySection[selectedKey]) : false;
-  const selectedSection = sections.find((s) => s.usageKey === selectedKey);
 
   const appendMessage = useCallback((key: string, message: ChatMessageData) => {
     setChatBySection((prev) => ({ ...prev, [key]: [...(prev[key] || []), message] }));
