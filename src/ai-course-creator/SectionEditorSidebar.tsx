@@ -354,33 +354,33 @@ const SectionEditorSidebar = ({
               >
                 {/* Spacer pushes messages to the bottom when thread is short */}
                 <div style={{ flex: 1 }} />
-              {isLoadingThread && chatMessages.length === 0 && (
-                <div className="d-flex align-items-center text-muted">
-                  <span className="ai-section-spinner mr-2" aria-hidden="true" />
-                  {intl.formatMessage(messages.thinking)}
-                </div>
-              )}
-              {chatMessages.map((message, idx) => (
-                <ChatMessageBubble
-                  // eslint-disable-next-line react/no-array-index-key
-                  key={idx}
-                  author={message.role}
-                  content={message.content}
-                  canEdit={message.role === 'user' && message.id !== undefined && !isStreaming && !isApplying}
-                  onEdit={(newContent) => handleEditMessage(idx, newContent)}
-                />
-              ))}
-              {isStreaming && (
-                streamingText
-                  ? <ChatMessageBubble author="assistant" content={cleanForDisplay(streamingText)} />
-                  : (
-                    <div className="d-flex align-items-center text-muted">
-                      <span className="ai-section-spinner mr-2" aria-hidden="true" />
-                      {intl.formatMessage(messages.thinking)}
-                    </div>
-                  )
-              )}
-              <div ref={threadEndRef} />
+                {isLoadingThread && chatMessages.length === 0 && (
+                  <div className="d-flex align-items-center text-muted">
+                    <span className="ai-section-spinner mr-2" aria-hidden="true" />
+                    {intl.formatMessage(messages.thinking)}
+                  </div>
+                )}
+                {chatMessages.map((message, idx) => (
+                  <ChatMessageBubble
+                    // eslint-disable-next-line react/no-array-index-key
+                    key={idx}
+                    author={message.role}
+                    content={message.content}
+                    canEdit={message.role === 'user' && message.id !== undefined && !isStreaming && !isApplying}
+                    onEdit={(newContent) => handleEditMessage(idx, newContent)}
+                  />
+                ))}
+                {isStreaming && (
+                  streamingText
+                    ? <ChatMessageBubble author="assistant" content={cleanForDisplay(streamingText)} />
+                    : (
+                      <div className="d-flex align-items-center text-muted">
+                        <span className="ai-section-spinner mr-2" aria-hidden="true" />
+                        {intl.formatMessage(messages.thinking)}
+                      </div>
+                    )
+                )}
+                <div ref={threadEndRef} />
               </div>
             </div>
 
