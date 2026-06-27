@@ -1,11 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Hyperlink } from '@openedx/paragon';
+import { Collapsible, Hyperlink } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 
 import { HelpSidebar } from '../../generic/help-sidebar';
 import { useHelpUrls } from '../../help-urls/hooks';
 import { getFormattedSidebarMessages } from './utils';
+import messages from './messages';
 
 const OutlineSideBar = ({ courseId }) => {
   const intl = useIntl();
@@ -28,15 +29,19 @@ const OutlineSideBar = ({ courseId }) => {
     <HelpSidebar
       courseId={courseId}
       showOtherSettings={false}
-      className="outline-sidebar mt-4"
+      className="outline-sidebar"
       data-testid="outline-sidebar"
     >
-      {sidebarMessages.map(({ title, descriptions, link }, index) => {
-        const isLastSection = index === sidebarMessages.length - 1;
-
-        return (
-          <div className="outline-sidebar-section" key={title}>
-            <h4 className="help-sidebar-about-title">{title}</h4>
+      <h3 className="outline-sidebar-header">{intl.formatMessage(messages.sidebar_header)}</h3>
+      <div className="outline-sidebar-sections">
+        {sidebarMessages.map(({ title, descriptions, link }) => (
+          <Collapsible
+            key={title}
+            className="outline-sidebar-section border-0"
+            styling="basic"
+            unmountOnExit={false}
+            title={<h4 className="help-sidebar-about-title m-0">{title}</h4>}
+          >
             {descriptions.map((description) => (
               <p className="help-sidebar-about-descriptions" key={description}>{description}</p>
             ))}
@@ -50,10 +55,9 @@ const OutlineSideBar = ({ courseId }) => {
                 {link.text}
               </Hyperlink>
             )}
-            {!isLastSection && <hr className="my-3.5" />}
-          </div>
-        );
-      })}
+          </Collapsible>
+        ))}
+      </div>
     </HelpSidebar>
   );
 };

@@ -1,6 +1,10 @@
 import { defineMessages } from '@edx/frontend-platform/i18n';
 
 const messages = defineMessages({
+  sidebar_header: {
+    id: 'course-authoring.course-outline.sidebar.header',
+    defaultMessage: 'Need help with your course?',
+  },
   section_1_title: {
     id: 'course-authoring.course-outline.sidebar.section-1.title',
     defaultMessage: 'Creating your course organization',
