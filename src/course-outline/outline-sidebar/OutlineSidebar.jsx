@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Collapsible, Hyperlink } from '@openedx/paragon';
+import { Collapsible, Hyperlink, Icon } from '@openedx/paragon';
+import { OpenInNew } from '@openedx/paragon/icons';
 import { useIntl } from '@edx/frontend-platform/i18n';
 
 import { HelpSidebar } from '../../generic/help-sidebar';
@@ -32,13 +33,15 @@ const OutlineSideBar = ({ courseId }) => {
       className="outline-sidebar"
       data-testid="outline-sidebar"
     >
-      <h3 className="outline-sidebar-header">{intl.formatMessage(messages.sidebar_header)}</h3>
+      <div className="outline-sidebar-header">
+        <h3 className="outline-sidebar-header-title m-0">{intl.formatMessage(messages.sidebar_header)}</h3>
+      </div>
       <div className="outline-sidebar-sections">
         {sidebarMessages.map(({ title, descriptions, link }) => (
           <Collapsible
             key={title}
             className="outline-sidebar-section border-0"
-            styling="basic"
+            styling="card-lg"
             unmountOnExit={false}
             title={<h4 className="help-sidebar-about-title m-0">{title}</h4>}
           >
@@ -47,12 +50,13 @@ const OutlineSideBar = ({ courseId }) => {
             ))}
             {Boolean(link) && Boolean(link.href) && (
               <Hyperlink
-                className="small"
+                className="outline-sidebar-section-link small d-inline-flex align-items-center"
                 destination={link.href}
                 target="_blank"
                 showLaunchIcon={false}
               >
                 {link.text}
+                <Icon src={OpenInNew} className="outline-sidebar-section-link-icon" />
               </Hyperlink>
             )}
           </Collapsible>
