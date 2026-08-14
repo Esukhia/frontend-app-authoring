@@ -8,12 +8,12 @@ const messages = defineMessages({
   },
   launchButtonDescription: {
     id: 'course-authoring.ai-course-creator.launch.description',
-    defaultMessage: 'Let WeBuddhist Academy interview you and build your course outline automatically.',
+    defaultMessage: 'Let SherabAI interview you and build your course outline automatically.',
     description: 'Helper text under the AI assistant launch button',
   },
   modalTitle: {
     id: 'course-authoring.ai-course-creator.modal.title',
-    defaultMessage: 'WeBuddhist Academy · AI course designer',
+    defaultMessage: 'SherabAI · AI course designer',
     description: 'Title of the AI course-creator modal',
   },
   inputPlaceholder: {
@@ -28,7 +28,7 @@ const messages = defineMessages({
   },
   thinking: {
     id: 'course-authoring.ai-course-creator.thinking',
-    defaultMessage: 'WeBuddhist Academy is thinking…',
+    defaultMessage: 'SherabAI is thinking…',
     description: 'Shown while the assistant reply is streaming',
   },
   materialsHeading: {
@@ -171,7 +171,7 @@ const messages = defineMessages({
     defaultMessage: 'Generate',
     description: 'Label for phase 4 (Course Generation) in the phase indicator',
   },
-  // --- Per-section editor ("Edit with WeBuddhist Academy AI") ---
+  // --- Per-section editor ("Edit with SherabAI") ---
   sectionBannerTitle: {
     id: 'course-authoring.ai-course-creator.section.banner.title',
     defaultMessage: 'Optimize your course with AI',
@@ -184,12 +184,12 @@ const messages = defineMessages({
   },
   sectionEditButton: {
     id: 'course-authoring.ai-course-creator.section.edit.button',
-    defaultMessage: 'Edit with WeBuddhist Academy AI',
+    defaultMessage: 'Edit with SherabAI',
     description: 'Button that opens the per-section AI editor sidebar',
   },
   sectionEditorTitle: {
     id: 'course-authoring.ai-course-creator.section.editor.title',
-    defaultMessage: 'Edit with WeBuddhist Academy AI',
+    defaultMessage: 'Edit with SherabAI',
     description: 'Title of the section editor sidebar',
   },
   sectionSelectLabel: {
@@ -204,7 +204,7 @@ const messages = defineMessages({
   },
   sectionSelectHint: {
     id: 'course-authoring.ai-course-creator.section.select.hint',
-    defaultMessage: 'Pick a section above to start editing it with WeBuddhist Academy.',
+    defaultMessage: 'Pick a section above to start editing it with SherabAI.',
     description: 'Hint shown before a section is selected',
   },
   zeroToHeroHeading: {
