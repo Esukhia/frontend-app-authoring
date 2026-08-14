@@ -8,12 +8,12 @@ const messages = defineMessages({
   },
   launchButtonDescription: {
     id: 'course-authoring.ai-course-creator.launch.description',
-    defaultMessage: 'Let Sherab interview you and build your course outline automatically.',
+    defaultMessage: 'Let SherabAI interview you and build your course outline automatically.',
     description: 'Helper text under the AI assistant launch button',
   },
   modalTitle: {
     id: 'course-authoring.ai-course-creator.modal.title',
-    defaultMessage: 'Sherab · AI course designer',
+    defaultMessage: 'SherabAI · AI course designer',
     description: 'Title of the AI course-creator modal',
   },
   inputPlaceholder: {
@@ -28,7 +28,7 @@ const messages = defineMessages({
   },
   thinking: {
     id: 'course-authoring.ai-course-creator.thinking',
-    defaultMessage: 'Sherab is thinking…',
+    defaultMessage: 'SherabAI is thinking…',
     description: 'Shown while the assistant reply is streaming',
   },
   materialsHeading: {
@@ -204,7 +204,7 @@ const messages = defineMessages({
   },
   sectionSelectHint: {
     id: 'course-authoring.ai-course-creator.section.select.hint',
-    defaultMessage: 'Pick a section above to start editing it with Sherab.',
+    defaultMessage: 'Pick a section above to start editing it with SherabAI.',
     description: 'Hint shown before a section is selected',
   },
   zeroToHeroHeading: {

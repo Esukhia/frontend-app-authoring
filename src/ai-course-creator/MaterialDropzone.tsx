@@ -57,7 +57,7 @@ const MaterialDropzone = ({
           {intl.formatMessage(messages.materialsHeading)}
         </span>
         <p className="small text-muted mb-0 mt-1" style={{ lineHeight: 1.4 }}>
-          Share slides, docs, videos or links and Sherab will build your course around them.
+          Share slides, docs, videos or links and SherabAI will build your course around them.
         </p>
       </div>
 

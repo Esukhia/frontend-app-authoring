@@ -44,7 +44,7 @@ const cleanForDisplay = (text: string) => stripPhaseMarker(stripSectionEdits(tex
 
 /**
  * Right-side drawer that edits ONE section conversationally. The creator picks a
- * section, chats with Sherab (themed on the section's zero-to-hero arc), and
+ * section, chats with SherabAI (themed on the section's zero-to-hero arc), and
  * commits the proposed edits with the Apply button. Each section keeps its own
  * thread so switching the dropdown is non-destructive.
  */
