@@ -178,7 +178,7 @@ const CourseOutline = ({ courseId }: CourseOutlineProps) => {
     dispatch(fetchCourseOutlineIndexQuery(courseId));
   }, [dispatch, courseId, intl]);
 
-  // Per-section AI editor ("Edit with SherabAI"), shown on a populated outline.
+  // Per-section AI editor ("Edit with WeBuddhist Academy AI"), shown on a populated outline.
   const [isSectionEditorOpen, setIsSectionEditorOpen] = useState(false);
   const handleSectionApplied = useCallback((summary: {
     sectionName: string;
